@@ -16,6 +16,10 @@
       "programme",
       "regimes-resa",
       "atelier-complet"
+    ],
+    "hypotheses": [
+      "Les huit étapes sont proposées d'après le chemin réel d'une réservation : à faire valider par l'équipe.",
+      "Les nombres d'actions sont comptés dans le code des écrans, pas à l'écran."
     ]
   },
   "etapes": [
@@ -709,6 +713,8 @@ h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; t
 .lien small { color: var(--texte-2); font-weight: 400; text-align: right; }
 .lien .badge { margin-left: 6px; }
 .aucun { margin: 0; color: var(--texte-2); }
+.hypotheses { margin: 4px 0 6px; padding-left: 1.2em; color: var(--texte-2); font-size: 14px; line-height: 1.5; }
+.hypotheses li + li { margin-top: 4px; }
 .chiffres { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 12px 0 0; padding: 0; list-style: none; }
 .chiffres b { font: 700 28px/1 var(--police-titres); color: var(--marque); display: block; font-variant-numeric: tabular-nums; }
 .chiffres span { color: var(--texte-2); font-size: 14px; }
@@ -843,7 +849,7 @@ const PRINCIPALES = TOUTES.filter(p => !espaceDe(p));
 /* ---------- En-tête ---------- */
 $("#titre").textContent = META.titre;
 $("#intro").textContent = META.introduction || ("Les pages de " + (META.produit || "l’application") + " côté " + META.role + " : à quoi elles servent, d’où l’on y vient, où l’on peut aller. Cliquez sur une page.");
-$("#dbl-n").textContent = "(" + PRINCIPALES.filter(estDouble).length + ")";
+$("#dbl-n").textContent = "(" + TOUTES.filter(estDouble).length + ")";
 $("#dbl").hidden = (D.doublons || []).length === 0;
 
 /* ---------- État ---------- */
@@ -923,7 +929,7 @@ for (const e of ETAPES.filter(x => !x.espace)) {
 }
 
 /* ---------- La fiche ---------- */
-function etiquetteDe(p) { const e = ETAPE[p.etape]; if (e.espace) return ESPACES.find(x => x.id === e.espace).nom + " · " + e.nom; return libelleEtape(p.etape); }
+function etiquetteDe(p) { const e = ETAPE[p.etape]; if (e.espace) { const n = ESPACES.find(x => x.id === e.espace).nom; return n === e.nom ? n : n + " · " + e.nom; } return libelleEtape(p.etape); }
 function lienPage(id) {
   const p = PAGE[id];
   const b = el("button", { type: "button", class: "lien", "data-aller": id });
@@ -953,12 +959,20 @@ function ficheAccueil() {
   fiche.append(el("p", { text: "Chaque fiche dit à quoi sert la page, d’où l’on y arrive et où l’on peut aller. Les flèches du schéma relient la page choisie à ses voisines." }));
   if (META.etat_au) fiche.append(el("p", { class: "info", text: "État au " + dateFr(META.etat_au) + "." }));
   if (META.perimetre) fiche.append(el("p", { class: "info", text: META.perimetre }));
+  if ((META.hypotheses || []).length) {
+    fiche.append(el("h3", { text: "Hypothèses, à valider" }));
+    const hl = el("ul", { class: "hypotheses" });
+    for (const h of META.hypotheses) hl.append(el("li", { text: h }));
+    fiche.append(hl);
+  }
   const ul = el("ul", { class: "chiffres" });
   const nombres = [[PRINCIPALES.length, "pages côté " + META.role], [doubles.length, "en double"], [(D.doublons || []).length, "groupes de doublons"]];
   if (orphelines.length) nombres.push([orphelines.length, orphelines.length > 1 ? "orphelines" : "orpheline"]);
   if (CONSTATS.length) nombres.push([CONSTATS.length, CONSTATS.length > 1 ? "constats" : "constat"]);
   for (const [n, t] of nombres) { const li = el("li"); li.append(el("b", { text: String(n) }), el("span", { text: t })); ul.append(li); }
   fiche.append(ul);
+  const replies = ESPACES.map(esp => [esp, TOUTES.filter(p => (ETAPE[p.etape].espace || "") === esp.id).length]).filter(x => x[1] > 0);
+  if (replies.length) fiche.append(el("p", { class: "info", text: "Replié en bas de la page : " + replies.map(([esp, n]) => esp.nom + " (" + plur(n, "page", "pages") + ")").join(", ") + "." }));
   if (CONSTATS.length) {
     fiche.append(el("h3", { text: "Constats (" + CONSTATS.length + ")" }));
     for (const c of CONSTATS) {
@@ -1137,8 +1151,13 @@ function filtrer() {
     if (ok) n++;
   }
   for (const sec of document.querySelectorAll(".etape")) sec.hidden = !sec.querySelector("li:not([hidden])");
-  for (const det of document.querySelectorAll(".espace")) det.hidden = !det.querySelector("li:not([hidden])");
   const filtre = q || etat.doublons;
+  for (const det of document.querySelectorAll(".espace")) {
+    const a = !!det.querySelector("li:not([hidden])");
+    det.hidden = !a;
+    if (filtre) { if (det.dataset.avant === undefined) det.dataset.avant = det.open ? "1" : "0"; if (a) det.open = true; }
+    else if (det.dataset.avant !== undefined) { det.open = det.dataset.avant === "1"; delete det.dataset.avant; }
+  }
   $("#vide").hidden = !(filtre && n === 0);
   $("#etat").textContent = filtre
     ? (n === 0 ? "Aucune page" : plur(n, "page", "pages")) + " sur " + TOUTES.length + (etat.doublons ? ", en double" : "") + (q ? ", pour « " + etat.q.trim() + " »" : "") + "."

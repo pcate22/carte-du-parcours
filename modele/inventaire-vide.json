@@ -5,6 +5,7 @@
     "role": "utilisateurs",
     "etat_au": "AAAA-MM-JJ",
     "perimetre": "Ce que la carte couvre, ce qu'elle laisse de côté, ce que le menu commun contient.",
+    "hypotheses": ["Ce que tu as choisi faute de pouvoir demander : étapes proposées, version du code lue, ce qui n'est pas compté."],
     "introduction": ""
   },
   "etapes": [

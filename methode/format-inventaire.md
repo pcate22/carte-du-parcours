@@ -1,6 +1,6 @@
 # Format de `inventaire.json`
 
-Un seul fichier JSON, en UTF-8. La carte se construit à partir de lui avec `scripts/construire.py`. Les champs inconnus sont ignorés. Le brouillon en ajoute, comme aides de travail à supprimer : `source`, `gabarit`, `liens_non_resolus` sur les pages, et `liens_communs` (pages citées par le menu ou le pied de page) à la racine.
+Un seul fichier JSON, en UTF-8. La carte se construit à partir de lui avec `scripts/construire.py`. Les champs inconnus sont ignorés. Le brouillon en ajoute, comme aides de travail à supprimer : `source`, `gabarit`, `liens_non_resolus` sur les pages, et à la racine `liens_communs` (pages citées par le menu ou le pied de page), `redirections` (adresses qui ne font que rediriger : ce ne sont pas des pages) et `liens_par_ressemblance` (liens résolus sans règle de réécriture lue : à vérifier).
 
 Modèle de départ : `modele/inventaire-vide.json`. Exemple complet : `exemple/inventaire-exemple.json`.
 
@@ -15,6 +15,7 @@ Modèle de départ : `modele/inventaire-vide.json`. Exemple complet : `exemple/i
 | `perimetre` | oui | Une ou deux phrases : ce que la carte couvre, ce qu'elle laisse de côté, ce que le menu commun contient. |
 | `introduction` | non | Texte sous le titre. Par défaut : une phrase générique avec `produit` et `role`. |
 | `pour_commencer` | non | Identifiants de 1 à 3 pages proposées dans la fiche d'accueil. Par défaut : les premières pages en doublon. |
+| `hypotheses` | non | Liste de phrases courtes : ce que tu as choisi faute de pouvoir demander (étapes proposées, version du code lue, ce qui n'est pas compté). Affichées dans la fiche d'accueil, sous le périmètre : une carte construite sans l'équipe doit dire qu'elle est à valider. |
 
 ## `etapes` : les étapes du parcours, dans l'ordre
 
@@ -39,8 +40,8 @@ Modèle de départ : `modele/inventaire-vide.json`. Exemple complet : `exemple/i
 | `nom` | oui | Le nom de l'écran, tel que la personne le lit. |
 | `etape` | oui | Identifiant d'une étape. |
 | `fonction` | oui | `Quand [situation], je veux [action], pour [but].` Une phrase, qui finit par un point. |
-| `adresse` | conseillé | Route, fichier ou nom d'écran, **en modèle** : `/ateliers/{atelier}`, jamais une valeur réelle. |
-| `actions` | conseillé | Nombre d'actions sur la page, ou une fourchette : `"6"`, `"4 à 6"`, `"1 + 2 par atelier"`. |
+| `adresse` | conseillé | Route, fichier ou nom d'écran. Ce qui identifie une donnée ou une personne s'écrit **en modèle** (`/ateliers/{atelier}`, `/merci-{code}.html`), jamais une valeur réelle. L'adresse d'une page fixe d'un site public (`/talks/mon-talk`) est publique : écris-la telle quelle. |
+| `actions` | conseillé | Nombre d'actions sur la page, ou une fourchette : `"6"`, `"4 à 6"`, `"1 + 2 par atelier"`. Un compte non vérifié à l'écran s'écrit tel quel : `"environ 8"`, `"au moins 5"`. Ne mets pas un chiffre précis que tu n'as pas compté. |
 | `vers` | non | Identifiants des pages où l'on peut aller depuis celle-ci. |
 | `parent` | non | Identifiant de la page dont celle-ci est une sous-page. Le lien parent vers sous-page est ajouté tout seul. |
 | `entree` | non | `true` si l'on arrive sur cette page de l'extérieur (adresse tapée, menu, lien d'e-mail, erreur 404). |

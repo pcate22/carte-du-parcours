@@ -10,6 +10,10 @@
       "programme",
       "regimes-resa",
       "atelier-complet"
+    ],
+    "hypotheses": [
+      "Les huit étapes sont proposées d'après le chemin réel d'une réservation : à faire valider par l'équipe.",
+      "Les nombres d'actions sont comptés dans le code des écrans, pas à l'écran."
     ]
   },
   "etapes": [
