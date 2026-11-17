@@ -1,6 +1,6 @@
 # Inventaire d'une application web
 
-Valable pour Python (Flask, FastAPI, Starlette, Django), Node (Express, Koa, Fastify, Next.js, Nuxt, SvelteKit, Remix, Astro), PHP (Laravel, Symfony) et Ruby (Rails). L'idée est la même partout : **une route = une page candidate, un gabarit = ce que la personne voit, les liens du gabarit = les flèches**.
+Valable pour Python (Flask, FastAPI, Starlette, Django), Node (Express, Koa, Fastify, Nuxt, SvelteKit, Remix, Astro), PHP (Laravel, Symfony) et Ruby (Rails). Pour **Next.js**, lis `recettes/nextjs.md` ; pour une **application d'une seule page** (React, Vue, Svelte, Angular, routeur maison), lis `recettes/application-une-page.md` ; pour un **site de pages PHP**, `recettes/site-statique.md` (section « Ce que le code du serveur ajoute »). L'idée est la même partout : **une route = une page candidate, un gabarit = ce que la personne voit, les liens du gabarit = les flèches**.
 
 ## 0. Le premier jet
 

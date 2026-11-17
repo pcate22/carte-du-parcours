@@ -66,7 +66,7 @@ python3 scripts/construire.py exemple/inventaire-exemple.json --nom carte-du-par
 SKILL.md                      le skill : les étapes à suivre
 methode/LISEZ-MOI.md          la méthode : phrase de fonction, actions, contrôles, RGAA
 methode/format-inventaire.md  les champs de inventaire.json
-recettes/                     extraire l'inventaire (web, site statique, mobile) et repérer les doublons
+recettes/                     extraire l'inventaire (web, Next.js, application d'une seule page, site statique, mobile) et repérer les doublons
 modele/carte.html             le gabarit : un bloc de données JSON, tout le reste est générique
 modele/inventaire-vide.json   un inventaire minimal pour partir
 exemple/                      carte d'exemple complète, entièrement fictive
@@ -76,7 +76,7 @@ evals/                        deux cas de test du skill, avec leurs projets d'es
 
 ## Limites connues
 
-- Le brouillon lit le code par expressions régulières : il rate les routes construites dynamiquement, les gestionnaires d'erreur et les écrans composés à la volée. Il est fait pour gagner du temps, pas pour remplacer la lecture.
+- Le brouillon lit le code par expressions régulières : il rate les routes construites dynamiquement, les routeurs maison (une application d'une seule page à écrans choisis par du code), les écrans composés à la volée et les règles de réécriture d'adresses. Ses nombres d'actions sont un ordre de grandeur. Il est fait pour gagner du temps, pas pour remplacer la lecture : sur une application d'une seule page, la table des écrans se lit à la main (`recettes/application-une-page.md`).
 - La carte est un **état daté du possible**, pas une mesure de l'usage réel.
 - Les flèches du schéma sont tracées pour la disposition ordinateur ; elles sont masquées sur petit écran, où la fiche liste les voisines.
 - Les couleurs sont des jetons à changer dans `:root` (trois blocs) ; relancer `scripts/contrastes.py` après chaque changement.

@@ -21,6 +21,8 @@ Une carte sans cadre devient vite un inventaire sans fin. Quatre réponses suffi
 
 Demander aussi : « Y a-t-il des mots à ne jamais mettre dans la carte ? » (noms de clientes, de personnes, de contenus). Ils vont dans un fichier lu par `verifier.py --interdits`.
 
+Si la personne ne peut pas répondre (le skill tourne sans interlocutrice), chaque réponse prise par défaut va dans `meta.hypotheses`, et les vraies questions, une liste courte, dans le compte rendu : une carte construite sans l'équipe est une proposition à valider, et la fiche d'accueil le dit.
+
 ## La phrase de fonction
 
 > **Quand** [situation de la personne], **je veux** [ce qu'elle veut faire], **pour** [ce qu'elle y gagne].
@@ -52,6 +54,8 @@ Une **action** est ce que la personne peut faire sur la page : un lien, un bouto
 - Une page d'attente compte 0 si la personne ne peut rien faire.
 
 Le **menu et le pied de page** ne comptent dans les actions d'aucune page, l'accueil compris. Leurs cibles figurent dans le `vers` de l'accueil, pour que les pages qu'on ne trouve que par le pied de page ne paraissent pas orphelines.
+
+Quand le compte n'est pas fait à l'écran (application non lancée, trop de pages), écris-le tel quel : `"environ 8"`, `"au moins 5"`. Le brouillon donne un ordre de grandeur (un lien répété compte une fois, un champ piège invisible ne compte pas) ; ne mets pas un chiffre précis que tu n'as pas compté.
 
 Pourquoi compter : une page à 22 actions fait trop de choses, une page à 0 est une impasse. Le chiffre aide à comparer deux écrans qui font la même chose. Le brouillon donne un ordre de grandeur, à recompter à la main sur les pages importantes.
 

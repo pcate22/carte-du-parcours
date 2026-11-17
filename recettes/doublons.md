@@ -59,6 +59,23 @@ Deux questions, la réponse « oui » à l'une des deux confirme :
 - `piste` : une phrase au plus, qui ouvre une direction. Pas un ordre, pas un planning.
 - Une page dans plusieurs groupes est normale : elle affichera « double ×2 ».
 
+## Deux écrans, même adresse
+
+Quand un interrupteur, un essai ou un réglage fait afficher deux écrans différents à la même adresse (une fiche en une page, ou une fiche puis une page de détail), ce sont deux pages. Mets-les dans un groupe `deux-chemins` : l'alerte « même adresse » se tait, et la carte montre qu'il y a deux versions à maintenir. Écris dans `note` de chacune à quelle condition elle s'affiche.
+
+## Les pages de confirmation, de suppression, d'erreur
+
+Une page « Supprimer X ? » par type d'objet (édition, atelier, compte…) est un `etat-refait` quand chacune a sa mise en page et son bouton. Sept pages de suppression qui n'ont ni le même composant ni la même page sont un bon candidat : un seul gabarit suffirait. Quand elles partagent déjà le même composant, ce sont des voisines : `non_doublons`.
+
+## Classer les groupes par intérêt
+
+Une équipe veut savoir par où commencer. Pour chaque groupe, écris à la fin du compte rendu ce qu'elle gagnerait à le supprimer, du plus au moins utile :
+
+1. **ce qu'on change à deux endroits** : une saisie, un texte, un réglage qu'il faut refaire dans chaque écran (le plus utile : c'est là que ça diverge) ;
+2. **le nombre de pages en moins** si on fusionne ;
+3. **la confusion pour la personne** (un même nom pour deux choses, deux chemins pour la même fonction) ;
+4. **ce qui est voulu** (les écrans d'un composant partagé, deux rôles, une décision documentée dans le code) : en dernier, avec la raison de l'avoir gardé.
+
 ## Zéro est un résultat
 
 Sur un petit site ou un produit récent, il n'y a souvent aucun doublon : le dire est un résultat, pas un échec. Ne pas en fabriquer pour « remplir ». Deux pages voisines qu'on a examinées et écartées vont dans `non_doublons`, avec la raison.
