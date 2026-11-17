@@ -50,7 +50,7 @@ Si la phrase est impossible à écrire, c'est une information : la page n'a pas 
 Une **action** est ce que la personne peut faire sur la page : un lien, un bouton, un champ, un choix dans une liste, un onglet. On compte ce qui se trouve **dans la page**, sans le menu ni le pied de page communs (ils sont dits une fois dans `meta.perimetre`).
 
 - Une liste de dix lignes identiques compte comme une ligne : « 1 + 1 par atelier ». Écrire alors la forme en toutes lettres : `"1 + 2 par atelier"`.
-- Un groupe de cases à cocher compte pour autant d'actions que de cases.
+- Un groupe de cases à cocher compte pour autant d'actions que de cases ; une liste déroulante compte pour 1.
 - Une page d'attente compte 0 si la personne ne peut rien faire.
 
 Le **menu et le pied de page** ne comptent dans les actions d'aucune page, l'accueil compris. Leurs cibles figurent dans le `vers` de l'accueil, pour que les pages qu'on ne trouve que par le pied de page ne paraissent pas orphelines.

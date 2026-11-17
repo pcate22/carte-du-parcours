@@ -61,7 +61,7 @@ Un site de présentation n'a pas de « paiement » ni de « compte ». Les étap
 
 Un formulaire sans destination visible (`action` vers une page fixe, ou absent, ou sans `method`) est un constat : le dire, car la personne ne saura pas où part son message. Idem : une page sans aucune suite, une information attendue qui manque (date, lieu, horaire), un parcours qui renvoie vers un formulaire trop général. Les noter dans `constats`.
 
-Les adresses gardent leur extension (`/concerts.html`) quand les liens du site l'écrivent ainsi ; `index.html` est la page de son dossier.
+Les adresses gardent leur extension (`/concerts.html`) quand les liens du site l'écrivent ainsi ; `index.html` est la page de son dossier, et l'accueil s'écrit `/` même quand les liens écrivent `/index.html`.
 
 ## 4. Les doublons d'un site statique
 

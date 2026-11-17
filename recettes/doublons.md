@@ -78,7 +78,7 @@ Une équipe veut savoir par où commencer. Pour chaque groupe, écris à la fin 
 
 ## Zéro est un résultat
 
-Sur un petit site ou un produit récent, il n'y a souvent aucun doublon : le dire est un résultat, pas un échec. Ne pas en fabriquer pour « remplir ». Deux pages voisines qu'on a examinées et écartées vont dans `non_doublons`, avec la raison.
+Sur un petit site ou un produit récent, il n'y a souvent aucun doublon : le dire est un résultat, pas un échec. Ne pas en fabriquer pour « remplir ». Deux pages voisines qu'on a examinées et écartées vont dans `non_doublons`, avec la raison, quand le contrôle les soupçonnait ; inutile de consigner celles qu'il n'a pas relevées (la carte n'affiche pas `non_doublons`, c'est une trace pour le contrôle).
 
 ## Les pages de confirmation
 
