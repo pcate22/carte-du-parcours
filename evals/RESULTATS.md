@@ -61,6 +61,6 @@ Chaque cas est rejoué par un agent neuf qui lit `SKILL.md` du dossier corrigé 
 | Cas | Énoncés tenus | Pages | Orpheline repérée | Doublon | Durée de l'agent |
 |---|---|---|---|---|---|
 | Appli Flask | 7 sur 7 | 11 sur 11 avec la 404 | oui (`conseils-arrosage`) | oui (livraison de la commande et adresse du compte, même réglage) | 3 min 18 s |
-| Site statique | 7 sur 7 | 12 sur 12 | oui (`galerie`) | aucun, à raison (inscription et contact non déclarés doublons) | environ 3 min |
+| Site statique | 7 sur 7 | 12 sur 12 | oui (`galerie`) | aucun, à raison (inscription et contact non déclarés doublons) | 3 min 17 s |
 
 Chaque rejeu a écrit ses hypothèses (affichées dans la carte), dit que le rendu n'a pas été ouvert dans un navigateur et n'a rien publié. Les rejeux ont aussi fait écrire ceci (tiré de leurs retours) : une page d'entrée n'est pas une page du menu commun ; le lien « Accueil » du menu n'est pas une flèche de l'accueil ; sans dépôt git, la date du jour ; sans pouvoir lancer le produit, compter dans le code et le dire ; `nom` d'une page à titre variable dit le modèle (« Fiche d'une plante ») ; un écran qui manque est un constat, pas une page `absente` ; le message du contrôle sur une orpheline ne pousse plus à ajouter `entree` ; l'accueil s'écrit `/` ; une liste déroulante compte pour 1 ; inutile de consigner dans `non_doublons` une paire que le contrôle ne soupçonnait pas.
