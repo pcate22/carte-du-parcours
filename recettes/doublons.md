@@ -59,6 +59,14 @@ Deux questions, la réponse « oui » à l'une des deux confirme :
 - `piste` : une phrase au plus, qui ouvre une direction. Pas un ordre, pas un planning.
 - Une page dans plusieurs groupes est normale : elle affichera « double ×2 ».
 
+## Zéro est un résultat
+
+Sur un petit site ou un produit récent, il n'y a souvent aucun doublon : le dire est un résultat, pas un échec. Ne pas en fabriquer pour « remplir ». Deux pages voisines qu'on a examinées et écartées vont dans `non_doublons`, avec la raison.
+
+## Les pages de confirmation
+
+Deux pages « merci » pour deux actions différentes (s'inscrire, écrire) sont des **voisines**, pas des doublons. Elles deviennent une page d'état refaite (`etat-refait`) quand le même message, la même mise en page et le même bouton ont été refaits à une variable près : un seul composant « Confirmation » suffirait.
+
 ## Combien de doublons ?
 
 Sur un produit qui a grandi sans carte, 15 à 30 % des pages touchées par un doublon est courant. Au-delà de 40 %, vérifier qu'on n'a pas confondu *voisin* et *doublon* : deux pages qui se ressemblent mais n'ont pas la même fonction ne vont pas dans un groupe.

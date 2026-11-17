@@ -60,6 +60,8 @@ Lire chaque gabarit et noter où il mène :
 | noms de routes | `url_for('x')`, `{% url 'x' %}`, `route('x')`, `path('x')` |
 | navigation côté client | `router.push(`, `navigate(`, `<Link `, `router-link` |
 
+**Redirections** : une flèche va vers la page que la personne *voit ensuite*. Si le formulaire d'une page envoie vers une route dont le `POST` répond par une redirection, la flèche va vers la destination de la redirection, pas vers la page qui porte le formulaire. Dites-le dans `note` quand c'est surprenant (« Ajouter au panier » qui mène directement à la livraison).
+
 Le **menu et le pied de page** sont dans le gabarit de base : les lire une fois, les dire dans `meta.perimetre` (« menu présent partout : Accueil, Catalogue, Panier, Mon compte »), et ne mettre leurs liens que sur l'accueil. Sinon chaque page mène à tout et les flèches ne disent plus rien.
 
 **Sous-page** : une page qu'on ouvre depuis une autre pour en régler un détail, avec une adresse qui la prolonge (`/reservations/{id}` puis `/reservations/{id}/date`). Mettre `parent`.
@@ -72,7 +74,7 @@ Dans le **rendu**, pas dans le source : liens, boutons, champs, listes de choix,
 
 ## 6. Écrire, contrôler, construire
 
-Revenir à `SKILL.md`, étapes 3 à 7 : fonctions, doublons, `verifier.py`, `construire.py`.
+Revenir à `SKILL.md`, étapes 3 à 8 : fonctions, doublons, `verifier.py`, `construire.py`.
 
 ## Pièges fréquents
 

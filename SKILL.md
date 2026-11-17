@@ -7,7 +7,7 @@ description: "Faire la carte du parcours d'un produit numérique (application we
 
 Un produit grandit page par page et personne n'en voit l'ensemble. La carte répond à trois questions : à quoi sert chaque page (une phrase), d'où l'on y vient et où l'on peut aller, qu'est-ce qui est fait deux fois. Le résultat est un inventaire (`inventaire.json`, la source) et une carte HTML d'un seul fichier, sans dépendance, à ouvrir dans un navigateur ou à publier comme artefact.
 
-Le dossier du skill est celui de ce fichier. Les scripts sont en Python 3.8 ou plus, sans dépendance : `python3 <dossier du skill>/scripts/...`.
+Le dossier du skill est celui de ce fichier : note-le `SKILL`. Les commandes ci-dessous s'écrivent `python3 "$SKILL/scripts/..."` ; les scripts sont en Python 3.8 ou plus, sans dépendance. Travaille dans un dossier à part (par exemple `carte/`), jamais dans le projet à cartographier.
 
 ## Les étapes, dans l'ordre
 
@@ -20,13 +20,13 @@ Pose ces questions une par une. Propose chaque fois une réponse tirée du proje
 3. **Étapes officielles** du parcours : les 4 à 7 étapes que l'équipe nomme. Si elle n'en a pas, propose-les d'après le chemin réel et fais-les valider. Ajoute si besoin « Compte et aide » et « Erreurs et attentes », sans numéro : on y va à tout moment.
 4. **Date de l'état** : la carte dit « État au… ». Prends la date du code lu (dernier commit) ou du jour.
 
-Demande aussi s'il y a des mots à ne jamais publier (noms de personnes, de clientes, de textes de contenu) : mets-les dans `mots-interdits.txt`, un par ligne.
+Demande aussi s'il y a des mots à ne jamais publier (noms de personnes, de clientes, de textes de contenu) : mets-les dans `mots-interdits.txt`, un par ligne. Si tu ne peux pas demander, n'en crée pas : le contrôle ignore un fichier absent.
 
 ### 2. Inventorier les pages
 
 Choisis la recette de la pile : `recettes/application-web.md` (Python, Node, PHP, Ruby), `recettes/site-statique.md`, `recettes/application-mobile.md`.
 
-Pour un premier jet en une minute : `python3 scripts/brouillon.py <racine du projet> -o inventaire.json`. Il liste routes, gabarits, actions et liens trouvés. C'est un brouillon : tu complètes les étapes, les fonctions, les sous-pages, les entrées, les pages qu'il ne voit pas (gestionnaires d'erreur, écrans ouverts par du code), puis tu relis chaque lien.
+Pour un premier jet en une minute : `python3 "$SKILL/scripts/brouillon.py" <racine du projet> -o carte/inventaire.json`. Il liste routes, gabarits, actions et liens trouvés. C'est un brouillon : tu complètes les étapes, les fonctions, les sous-pages, les entrées, les pages qu'il ne voit pas (gestionnaires d'erreur, écrans ouverts par du code), puis tu relis chaque lien. Supprime les champs d'aide du brouillon (`liens_communs`, `source`, `gabarit`, `liens_non_resolus`) une fois utilisés.
 
 Une page est un écran que la personne perçoit comme un lieu distinct : une adresse, un titre, un but. Les pages d'erreur, d'attente, de refus et de confirmation comptent. Les états d'un même écran (vide, plein) ne comptent pas, sauf si le code les refait en écrans à part : c'est alors un doublon à signaler.
 
@@ -40,28 +40,34 @@ Compte aussi les actions de chaque page : ce que la personne peut faire (liens, 
 
 ### 4. Relier
 
-Pour chaque page, `vers` liste les pages où l'on peut aller. Les pages précédentes se calculent toutes seules. Une sous-page porte `parent`. Les pages où l'on arrive de l'extérieur (adresse, menu, lien d'e-mail) portent `entree: true`. Ne « corrige » pas une page orpheline (aucun lien n'y mène) : la carte la montre, c'est une information.
+Pour chaque page, `vers` liste les pages où l'on peut aller. Une flèche va vers la page que la personne **voit ensuite** : si un formulaire envoie vers une adresse dont la réponse est une redirection, la flèche va vers la destination de la redirection. Le menu et le pied de page communs se disent une fois dans `meta.perimetre` : leurs cibles vont dans le `vers` de l'accueil (sinon une page qu'on ne trouve que dans le pied de page paraîtrait orpheline), mais ils ne comptent pas dans les actions de l'accueil ni des autres pages. Les pages précédentes se calculent toutes seules. Une sous-page porte `parent`. Les pages où l'on arrive de l'extérieur (adresse, menu, lien d'e-mail) portent `entree: true`. Ne « corrige » pas une page orpheline (aucun lien n'y mène) : la carte la montre, c'est une information.
 
 ### 5. Repérer les doublons
 
-Lis `recettes/doublons.md` : quatre sortes de doublon, comment les trouver, comment écrire `pourquoi` et `piste`. Mets chaque groupe dans `doublons`. Un doublon est une décision à prendre pour l'équipe : tu le montres, tu ne l'arbitres pas.
+Lis `recettes/doublons.md` : quatre sortes de doublon, comment les trouver, comment écrire `pourquoi` et `piste`. Mets chaque groupe dans `doublons`. Un doublon est une décision à prendre pour l'équipe : tu le montres, tu ne l'arbitres pas. Quand le contrôle soupçonne un doublon que tu as examiné et écarté (deux fonctions voisines mais différentes), note la paire dans `non_doublons` avec la raison : l'alerte ne revient plus.
 
-### 6. Contrôler, puis construire
+### 6. Noter ce qui ne va pas
+
+Quand la demande est aussi un audit (« ce qui ne va pas », « les défauts »), ou quand tu as vu autre chose qu'un doublon, ajoute des `constats` : une impasse, un formulaire dont on ne voit pas où part le message, une information absente, une page qui n'offre aucune suite. Huit au plus, chacun avec ses pages. Un constat est un fait observé dans le code, pas une opinion.
+
+### 7. Contrôler, puis construire
 
 ```
-python3 scripts/verifier.py inventaire.json --interdits mots-interdits.txt
-python3 scripts/construire.py inventaire.json -o sortie/ --nom carte-du-parcours
+python3 "$SKILL/scripts/verifier.py" carte/inventaire.json --interdits carte/mots-interdits.txt
+python3 "$SKILL/scripts/construire.py" carte/inventaire.json --interdits carte/mots-interdits.txt
 ```
 
-Corrige jusqu'à « Résultat : OK », puis relis les attentions une par une (doublons non signalés, jargon, pages inaccessibles). Le script produit `carte-du-parcours.html` (page complète) et `carte-du-parcours.artefact.html` (sans `<html>` ni `<head>`, pour l'outil Artifact).
+Corrige jusqu'à « Résultat : OK », puis relis les attentions une par une (doublons non signalés, jargon, pages inaccessibles). Le script produit, à côté de l'inventaire, `carte-du-parcours.html` (page complète) et `carte-du-parcours.artefact.html` (sans `<html>` ni `<head>`, pour l'outil Artifact), puis les contrôle sans navigateur (`scripts/controler_html.py` : données lisibles, aucun repère « A REMPLIR » oublié, syntaxe du script par Node). Ce contrôle ne remplace pas l'étape 8.
 
-### 7. Regarder le résultat
+### 8. Regarder le résultat
 
-Ouvre le fichier dans un navigateur (en local, par un petit serveur ou `file://`). Vérifie : le ruban saute à l'étape, la recherche filtre, « Seulement les doublons » filtre, une page ouvre sa fiche avec sa fonction, son adresse, ses actions, ses doublons, ses précédentes et ses sous-pages cliquables, « Retour » revient, le thème bascule, rien ne dépasse à 375 px de large. Si tu as changé des couleurs : `python3 scripts/contrastes.py carte-du-parcours.html`. Si axe est disponible, lance-le : il signale `color-contrast` « incomplet » à cause des flèches superposées, c'est normal (masque le calque `.liens-svg` pour le mesurer).
+Si tu n'as pas de navigateur, dis-le dans ton compte rendu : n'écris pas que les clics ou le rendu sont vérifiés. Sinon, ouvre le fichier dans un navigateur (en local, par un petit serveur ou `file://`). Vérifie : le ruban saute à l'étape, la recherche filtre, « Seulement les doublons » filtre, une page ouvre sa fiche avec sa fonction, son adresse, ses actions, ses doublons, ses précédentes et ses sous-pages cliquables, « Retour » revient, le thème bascule, rien ne dépasse à 375 px de large. Si tu as changé des couleurs : `python3 "$SKILL/scripts/contrastes.py" carte/carte-du-parcours.html`. Si axe est disponible, lance-le en clair et en sombre : zéro violation attendue. Quand une page est choisie, axe peut classer `color-contrast` en « incomplet » parce que les flèches passent au-dessus des cartes ; masque alors le calque (`.liens-svg { display: none }`) pour le mesurer.
 
-### 8. Livrer
+Deux pièges de test : un volet de navigateur masqué suspend les animations de la page, donc les flèches ne se tracent pas (ce n'est pas un défaut) ; et `navigate` vers la même adresse avec un `#` identique ne recharge pas la page (recharge-la).
 
-Rends à la personne l'`inventaire.json` (c'est la source : la carte se refait en une commande), les deux HTML, et une liste de ce que la carte ne couvre pas. Ne publie rien sans son accord. Pour publier comme artefact : le fichier `.artefact.html`, avec l'outil Artifact, icône « map », titre = `meta.titre`, une phrase de description.
+### 9. Livrer
+
+Rends à la personne l'`inventaire.json` (c'est la source : la carte se refait en une commande), les deux HTML, et une liste de ce que la carte ne couvre pas. Ne publie rien sans son accord. Pour publier comme artefact : l'outil Artifact demande de charger le skill `artifact-design` avant de publier (fais-le, il se charge en une ligne), puis publie le fichier `.artefact.html` **tel quel** : il respecte déjà le contrat des artefacts (`<title>` d'abord, jetons de couleur clair et sombre, aucun script externe). Icône « map », titre = `meta.titre` (déjà dans le fichier), une phrase de description.
 
 ## Garde-fous
 
@@ -80,4 +86,4 @@ Rends à la personne l'`inventaire.json` (c'est la source : la carte se refait e
 | `modele/carte.html` | le gabarit de la carte (un bloc de données JSON, le reste est générique) |
 | `modele/inventaire-vide.json` | un inventaire minimal pour partir |
 | `exemple/` | une carte complète d'un produit fictif (30 pages, 6 groupes de doublons) |
-| `scripts/` | `brouillon.py`, `verifier.py`, `construire.py`, `contrastes.py` |
+| `scripts/` | `brouillon.py`, `verifier.py`, `construire.py`, `controler_html.py`, `contrastes.py` |

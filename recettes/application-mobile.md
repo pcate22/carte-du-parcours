@@ -54,4 +54,4 @@ Les onglets du bas donnent souvent l'ossature (Accueil, Recherche, Panier, Profi
 
 ## 6. Écrire, contrôler, construire
 
-Revenir à `SKILL.md`, étapes 3 à 7.
+Revenir à `SKILL.md`, étapes 3 à 8.

@@ -5,10 +5,49 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Carte du parcours</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+
+<!-- LES DONNEES : le seul bloc à remplacer. scripts/construire.py met ici l'inventaire. -->
+<!--DONNEES:DEBUT-->
+<script type="application/json" id="donnees">
+{
+  "meta": {
+    "titre": "Carte du parcours",
+    "produit": "Mon produit",
+    "role": "utilisatrices",
+    "etat_au": "2026-01-15",
+    "perimetre": "Exemple minimal fourni avec le gabarit : remplacez tout ce bloc par votre inventaire.",
+    "introduction": "Exemple minimal : quatre pages, une étape de plus à venir. Cliquez sur une page.",
+    "pour_commencer": ["accueil"]
+  },
+  "etapes": [
+    { "id": "entree", "numero": "1", "nom": "Entrée", "sous_titre": "arriver et choisir" },
+    { "id": "faire", "numero": "2", "nom": "Faire", "sous_titre": "le cœur du parcours" },
+    { "id": "aide", "nom": "Compte et aide", "court": "Compte et aide", "sous_titre": "à tout moment" }
+  ],
+  "espaces": [],
+  "pages": [
+    { "id": "accueil", "nom": "Accueil", "etape": "entree", "adresse": "/", "entree": true, "actions": "3",
+      "fonction": "Quand je découvre le service, je veux comprendre ce qu’il fait, pour décider d’essayer.",
+      "vers": ["liste", "aide"] },
+    { "id": "liste", "nom": "La liste", "etape": "entree", "adresse": "/liste", "actions": "5",
+      "fonction": "Quand je cherche un élément, je veux voir la liste et filtrer, pour trouver le bon.",
+      "vers": ["detail", "accueil"] },
+    { "id": "detail", "nom": "Un élément", "etape": "faire", "adresse": "/liste/{n}", "actions": "4", "parent": "liste",
+      "fonction": "Quand j’ai choisi un élément, je veux le lire en entier, pour décider de la suite.",
+      "vers": ["liste"] },
+    { "id": "aide", "nom": "Aide et contact", "etape": "aide", "adresse": "/aide", "actions": "2",
+      "fonction": "Quand j’ai un problème, je veux écrire à une personne, pour recevoir une réponse.",
+      "vers": [] }
+  ],
+  "doublons": []
+}
+</script>
+<!--DONNEES:FIN-->
+
 <style>
 /* Plan : un schéma large pour l'ordinateur (environ 1440 x 760). Le parcours en ruban cliquable, comme une ligne de métro
    dont chaque étape est une station ; les pages en cartes par étape ; la fiche de la page choisie à droite.
-   Tout est dans ce fichier : aucun script ni style externe, les données sont dans le bloc JSON plus bas. */
+   Tout est dans ce fichier : aucun script ni style externe ; les données sont dans le bloc JSON (id « donnees »), juste au-dessus. */
 :root {
   /* Couleurs, clair. Chaque paire texte/fond est mesurée par scripts/contrastes.py. */
   --fond: #F3F6F7; --surface: #FFFFFF; --teinte: #E3EEF1; --surligne: #D8EAF0;
@@ -93,6 +132,7 @@ h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; t
 .cote-schema { min-width: 0; }
 .schema { position: relative; display: flex; flex-direction: column; gap: 22px; }
 .liens-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+.liens-svg:empty { display: none; }
 .fl { fill: none; stroke-width: 2.2; stroke-opacity: .9; }
 .fl.suiv { stroke: var(--action); }
 .fl.vient { stroke: var(--texte-2); stroke-dasharray: 6 5; }
@@ -123,7 +163,8 @@ h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; t
 .carte.groupe { box-shadow: 0 0 0 3px var(--attention); }
 .carte .tag { position: absolute; top: -9px; right: 8px; padding: 0 7px; font-size: 12px; font-weight: 700; border-radius: 8px; background: var(--fond); color: var(--texte-2); border: 1px solid var(--bord); }
 .carte.va .tag { color: var(--action); border-color: var(--action); }
-.carte.groupe .tag { color: var(--attention); border-color: var(--attention); }
+.carte .tag.meme { color: var(--attention); border-color: var(--attention); }
+.carte .tag.bas { top: auto; bottom: -9px; }
 .vide { margin: 14px 0 0; padding: 14px 16px; border: 2px dashed var(--bord); border-radius: 8px; color: var(--texte-2); }
 
 /* Espaces repliés (par exemple l'espace de l'équipe) */
@@ -153,6 +194,10 @@ h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; t
 .boite p { margin: 2px 0 8px; }
 .boite .type { font-size: 14px; color: var(--texte-2); }
 .note { margin: 14px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--teinte); }
+.constat { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; background: var(--teinte); }
+.constat strong { display: block; color: var(--marque); margin-bottom: 2px; }
+.constat p { margin: 0 0 8px; }
+.constat .liste-liens { gap: 4px; }
 .liste-liens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .lien { width: 100%; min-height: 44px; text-align: left; padding: 8px 12px; border: 2px solid var(--filet); border-radius: 8px; background: var(--fond); display: flex; justify-content: space-between; gap: 10px; align-items: center; font-weight: 600; }
 .lien:hover { border-color: var(--action); }
@@ -218,43 +263,6 @@ h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; t
   </main>
 </div>
 
-<!--DONNEES:DEBUT-->
-<script type="application/json" id="donnees">
-{
-  "meta": {
-    "titre": "Carte du parcours",
-    "produit": "Mon produit",
-    "role": "utilisatrices",
-    "etat_au": "2026-01-15",
-    "perimetre": "Exemple minimal fourni avec le gabarit : remplacez tout ce bloc par votre inventaire.",
-    "introduction": "Exemple minimal : quatre pages, une étape de plus à venir. Cliquez sur une page.",
-    "pour_commencer": ["accueil"]
-  },
-  "etapes": [
-    { "id": "entree", "numero": "1", "nom": "Entrée", "sous_titre": "arriver et choisir" },
-    { "id": "faire", "numero": "2", "nom": "Faire", "sous_titre": "le cœur du parcours" },
-    { "id": "aide", "nom": "Compte et aide", "court": "Compte et aide", "sous_titre": "à tout moment" }
-  ],
-  "espaces": [],
-  "pages": [
-    { "id": "accueil", "nom": "Accueil", "etape": "entree", "adresse": "/", "entree": true, "actions": "3",
-      "fonction": "Quand je découvre le service, je veux comprendre ce qu’il fait, pour décider d’essayer.",
-      "vers": ["liste", "aide"] },
-    { "id": "liste", "nom": "La liste", "etape": "entree", "adresse": "/liste", "actions": "5",
-      "fonction": "Quand je cherche un élément, je veux voir la liste et filtrer, pour trouver le bon.",
-      "vers": ["detail", "accueil"] },
-    { "id": "detail", "nom": "Un élément", "etape": "faire", "adresse": "/liste/{n}", "actions": "4", "parent": "liste",
-      "fonction": "Quand j’ai choisi un élément, je veux le lire en entier, pour décider de la suite.",
-      "vers": ["liste"] },
-    { "id": "aide", "nom": "Aide et contact", "etape": "aide", "adresse": "/aide", "actions": "2",
-      "fonction": "Quand j’ai un problème, je veux écrire à une personne, pour recevoir une réponse.",
-      "vers": [] }
-  ],
-  "doublons": []
-}
-</script>
-<!--DONNEES:FIN-->
-
 <script>
 "use strict";
 (function () {
@@ -281,6 +289,7 @@ try { D = JSON.parse($("#donnees").textContent); } catch (e) { refuser("le bloc 
 const META = Object.assign({ titre: "Carte du parcours", produit: "", role: "utilisatrices", etat_au: "", perimetre: "", introduction: "", pour_commencer: [] }, D.meta || {});
 const ETAPES = D.etapes || [];
 const ESPACES = D.espaces || [];
+const CONSTATS = D.constats || [];
 const TYPES_DOUBLON = {
   "deux-chemins": "Deux chemins vers la même fonction",
   "meme-reglage": "Même réglage sur deux écrans",
@@ -317,6 +326,10 @@ for (const g of D.doublons || []) {
   if (!g.pages || g.pages.length < 2) refuser("le groupe de doublons « " + g.id + " » doit nommer au moins deux pages.");
   for (const i of g.pages) { if (!PAGE[i]) refuser("le groupe « " + g.id + " » nomme la page inconnue « " + i + " »."); PAGE[i].groupes.push(g); }
 }
+for (const c of CONSTATS) {
+  if (!c.titre || !c.texte) refuser("un constat n’a pas de titre ou de texte.");
+  for (const i of c.pages || []) if (!PAGE[i]) refuser("le constat « " + c.titre + " » nomme la page inconnue « " + i + " ».");
+}
 for (const p of TOUTES) p.orpheline = !p.entree && !p.absente && p.vient.length === 0;
 const estDouble = p => p.groupes.length > 0;
 const espaceDe = p => ETAPE[p.etape].espace || null;
@@ -328,6 +341,7 @@ const PRINCIPALES = TOUTES.filter(p => !espaceDe(p));
 $("#titre").textContent = META.titre;
 $("#intro").textContent = META.introduction || ("Les pages de " + (META.produit || "l’application") + " côté " + META.role + " : à quoi elles servent, d’où l’on y vient, où l’on peut aller. Cliquez sur une page.");
 $("#dbl-n").textContent = "(" + PRINCIPALES.filter(estDouble).length + ")";
+$("#dbl").hidden = (D.doublons || []).length === 0;
 
 /* ---------- État ---------- */
 const etat = { choisi: null, pile: [], q: "", doublons: false, declencheur: null };
@@ -438,9 +452,19 @@ function ficheAccueil() {
   if (META.perimetre) fiche.append(el("p", { class: "info", text: META.perimetre }));
   const ul = el("ul", { class: "chiffres" });
   const nombres = [[PRINCIPALES.length, "pages côté " + META.role], [doubles.length, "en double"], [(D.doublons || []).length, "groupes de doublons"]];
-  if (orphelines.length) nombres.push([orphelines.length, plur(orphelines.length, "orpheline", "orphelines")]);
+  if (orphelines.length) nombres.push([orphelines.length, orphelines.length > 1 ? "orphelines" : "orpheline"]);
+  if (CONSTATS.length) nombres.push([CONSTATS.length, CONSTATS.length > 1 ? "constats" : "constat"]);
   for (const [n, t] of nombres) { const li = el("li"); li.append(el("b", { text: String(n) }), el("span", { text: t })); ul.append(li); }
   fiche.append(ul);
+  if (CONSTATS.length) {
+    fiche.append(el("h3", { text: "Constats (" + CONSTATS.length + ")" }));
+    for (const c of CONSTATS) {
+      const b = el("div", { class: "constat" });
+      b.append(el("strong", { text: c.titre }), el("p", { text: c.texte }));
+      if ((c.pages || []).length) b.append(listeLiens(c.pages, ""));
+      fiche.append(b);
+    }
+  }
   fiche.append(el("h3", { text: "Comment lire la carte" }));
   const lg = el("ul", { class: "legende" });
   const l = (cls, txt) => { const li = el("li"); li.append(el("span", { class: "pastille " + cls, "aria-hidden": "true" }), el("span", { text: txt })); return li; };
@@ -508,7 +532,10 @@ function marquer() {
   const les2 = new Set(p.vient.filter(i => p.vers.includes(i)));
   for (const i of p.vient) if (cartes[i] && !les2.has(i)) { cartes[i].classList.add("vient"); cartes[i].append(el("span", { class: "tag", text: "d’où" })); }
   for (const i of p.vers) if (cartes[i]) { cartes[i].classList.add("va"); cartes[i].append(el("span", { class: "tag", text: les2.has(i) ? "d’où et vers" : "vers" })); }
-  for (const g of p.groupes) for (const i of g.pages) if (i !== etat.choisi && cartes[i]) { cartes[i].classList.add("groupe"); if (!cartes[i].querySelector(".tag")) cartes[i].append(el("span", { class: "tag", text: "même fonction" })); }
+  for (const g of p.groupes) for (const i of g.pages) if (i !== etat.choisi && cartes[i]) {
+    cartes[i].classList.add("groupe");
+    if (!cartes[i].querySelector(".tag.meme")) cartes[i].append(el("span", { class: "tag meme" + (cartes[i].querySelector(".tag") ? " bas" : ""), text: "même fonction" }));
+  }
 }
 const NS = "http://www.w3.org/2000/svg";
 function tracer() {

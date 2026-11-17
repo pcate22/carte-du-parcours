@@ -51,7 +51,13 @@ Une **action** est ce que la personne peut faire sur la page : un lien, un bouto
 - Un groupe de cases à cocher compte pour autant d'actions que de cases.
 - Une page d'attente compte 0 si la personne ne peut rien faire.
 
+Le **menu et le pied de page** ne comptent dans les actions d'aucune page, l'accueil compris. Leurs cibles figurent dans le `vers` de l'accueil, pour que les pages qu'on ne trouve que par le pied de page ne paraissent pas orphelines.
+
 Pourquoi compter : une page à 22 actions fait trop de choses, une page à 0 est une impasse. Le chiffre aide à comparer deux écrans qui font la même chose. Le brouillon donne un ordre de grandeur, à recompter à la main sur les pages importantes.
+
+## Les constats
+
+Un **constat** est un défaut observé qui n'est ni un doublon ni une page orpheline : une impasse, un formulaire dont on ne voit pas où part le message, une information absente, une page sans suite. Il s'écrit du côté de la personne, avec les noms des écrans, et renvoie aux pages concernées. Huit au plus. Ils sont dans la fiche d'accueil de la carte.
 
 ## Une carte pour l'ordinateur d'abord
 
@@ -82,7 +88,7 @@ La carte n'est livrée qu'après ces sept contrôles. Les quatre premiers sont f
 
 1. **Chaque page a une fonction** au format « Quand je…, je veux…, pour… », sans jargon repérable.
 2. **Chaque lien mène à une fiche qui existe** : `vers`, `parent` et les groupes de doublons nomment tous des pages de l'inventaire.
-3. **Aucun doublon non signalé** : le script cherche les pages de même adresse, de même nom ou de fonctions très proches qui ne sont pas dans un groupe. Chaque alerte est tranchée : soit un groupe de plus, soit une raison de ne pas en faire.
+3. **Aucun doublon non signalé** : le script cherche les pages de même adresse, de même nom ou de fonctions très proches qui ne sont pas dans un groupe. Chaque alerte est tranchée : soit un groupe dans `doublons`, soit une entrée dans `non_doublons` avec la raison de ne pas en faire un.
 4. **Aucune donnée réelle** : e-mails, numéros, adresses web, et mots de la liste d'interdits.
 5. **La carte s'ouvre sans erreur de console** et chaque clic fait ce qu'il dit (ruban, recherche, filtre, fiche, Retour, thème).
 6. **Les pages importantes sont comptées à la main** : actions et liens relus sur au moins une page par étape.
@@ -103,7 +109,7 @@ Le gabarit est écrit pour que la carte soit lisible au clavier, au lecteur d'é
 | **Zoom et petit écran** (10.4) | Rien ne dépasse à 375 px de large ; texte en unités relatives. | Zoom du navigateur à 200 %. |
 | **Mouvement** | Défilement doux seulement si la personne ne demande pas moins de mouvement. | Réglage « réduire les animations » du système. |
 
-Avec axe : le contrôle `color-contrast` ressort « incomplet » parce que le calque des flèches passe au-dessus des cartes. Pour le mesurer, masquer le calque (`.liens-svg { display: none }`) puis relancer axe, ou faire confiance à `contrastes.py`, qui mesure les couleurs elles-mêmes.
+Avec axe : zéro violation et zéro contrôle incomplet au repos, en clair et en sombre. Quand une page est choisie, `color-contrast` peut ressortir « incomplet » parce que les flèches passent au-dessus des cartes. Pour le mesurer, masquer le calque (`.liens-svg { display: none }`) puis relancer axe, ou faire confiance à `contrastes.py`, qui mesure les couleurs elles-mêmes.
 
 Si vous changez les couleurs : modifier les jetons de `:root` dans les **trois** blocs (clair, sombre automatique, sombre choisi), puis relancer `contrastes.py`.
 

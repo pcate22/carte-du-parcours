@@ -47,6 +47,7 @@ RE_TITLE = re.compile(r"<(?:h1|title)[^>]*>(.*?)</(?:h1|title)>", re.I | re.S)
 
 
 def slug(texte):
+    texte = re.sub(r"\.html?$", "", texte)
     texte = unicodedata.normalize("NFD", texte)
     texte = "".join(c for c in texte if unicodedata.category(c) != "Mn").lower()
     texte = re.sub(r"\{[^}]*\}|<[^>]*>|\[[^\]]*\]", " ", texte)
@@ -65,6 +66,14 @@ def normaliser_adresse(a):
 def adresse_vers_motif(a):
     parties = re.split(r"(\{p\})", normaliser_adresse(a))
     return re.compile("^" + "".join("[^/]+" if p == "{p}" else re.escape(p) for p in parties) + "$")
+
+
+def modeler(adresse):
+    """/plantes/<int:plante_id> ou /plantes/:id ou /plantes/[id] devient /plantes/{plante_id}."""
+    a = re.sub(r"<(?:\w+:)?(\w+)>", r"{\1}", adresse)
+    a = re.sub(r"/:(\w+)", r"/{\1}", a)
+    a = re.sub(r"\[+\.{0,3}(\w+)\]+", r"{\1}", a)
+    return re.sub(r"\$\{[^}]*\}|\{\{[^}]*\}\}", "{id}", a)
 
 
 def lire(chemin):
@@ -94,7 +103,10 @@ def adresse_fichier(rel):
         if p.startswith(prefixe):
             p = p[len(prefixe):]
             break
-    p = re.sub(r"\.(html?|vue|svelte|astro|jsx|tsx|js|ts|md|mdx|php)$", "", p)
+    if re.search(r"(^|/)index\.html?$", p):
+        p = re.sub(r"/?index\.html?$", "", p)   # un index.html est la page de son dossier
+    elif not p.endswith((".html", ".htm")):
+        p = re.sub(r"\.(vue|svelte|astro|jsx|tsx|js|ts|md|mdx|php)$", "", p)   # un .html garde son extension : les liens l'écrivent
     p = re.sub(r"/?(\+page|page|index)$", "", p)
     p = re.sub(r"\(([^)]*)\)/?", "", p)
     p = re.sub(r"\[+\.{0,3}(\w+)\]+", r"{\1}", p)
@@ -196,6 +208,7 @@ def main(argv=None):
     # Lecture des gabarits : titre, actions, liens.
     liste = []
     textes = {}
+    textes_actions = {}
     for cle, p in pages.items():
         chemin = None
         if p["gabarit"]:
@@ -221,11 +234,18 @@ def main(argv=None):
         for rx in (RE_HREF, RE_URL_FOR, RE_DJ_URL, RE_PUSH):
             liens_bruts += [x.strip() for x in rx.findall(texte)]
         liens_bruts = [x for x in liens_bruts if x and not x.startswith("{")]
+        textes_actions[cle] = "\n".join(l for l in texte_complet.splitlines() if l.strip() not in communes)
         liste.append((cle, p, chemin, texte, titre or p["nom"] or humaniser(p["adresse"]), liens_bruts))
     liens_communs_bruts = []
     for ligne in communes:
         for rx in (RE_HREF, RE_URL_FOR, RE_DJ_URL, RE_PUSH):
             liens_communs_bruts += [x.strip() for x in rx.findall(ligne)]
+    # Gabarits de base (menu, pied de page hérités par les autres) : leurs liens sont communs à toutes les pages.
+    for nom_g, chemin_g in {os.path.basename(c): c for c in set(gabarits.values())}.items():
+        if re.match(r"^_?(base|layout|application|default|main|root)\b", nom_g, re.I):
+            texte_g = lire(chemin_g)
+            for rx in (RE_HREF, RE_URL_FOR, RE_DJ_URL, RE_PUSH):
+                liens_communs_bruts += [x.strip() for x in rx.findall(texte_g) if x.strip() and not x.strip().startswith("{")]
 
     motifs = [(cle, adresse_vers_motif(p["adresse"])) for cle, p, *_ in liste if p["adresse"].startswith("/")]
     ids, utilises = {}, set()
@@ -249,8 +269,9 @@ def main(argv=None):
             if not adr.startswith("/"):
                 adr = "/" + adr
             adr = re.sub(r"/index(\.html?)?$", "", adr) or "/"
+            candidats = {adr, adr + ".html", re.sub(r"\.html?$", "", adr)}
             for cle, motif in motifs:
-                if motif.match(adr) or motif.match(re.sub(r"\.html?$", "", adr)):
+                if any(motif.match(c) for c in candidats):
                     return cle
         return False
 
@@ -270,10 +291,10 @@ def main(argv=None):
             sans_gabarit += 1
         non_resolus += len(inconnus)
         page = {
-            "id": ids[cle], "nom": nom, "etape": "A-CHOISIR", "adresse": p["adresse"],
+            "id": ids[cle], "nom": nom, "etape": "A-CHOISIR", "adresse": modeler(p["adresse"]),
             "fonction": "A ECRIRE : Quand je ..., je veux ..., pour ....",
-            "actions": str(len(RE_ACTION.findall(texte))) if texte else "",
-            "vers": vers, "entree": p["adresse"] == "/",
+            "actions": str(len(RE_ACTION.findall(textes_actions[cle]))) if texte else "",
+            "vers": vers, "entree": p["adresse"] == "/" or os.path.basename(p["adresse"]) in ("404", "404.html"),
             "source": ", ".join(p["sources"][:3]),
         }
         if chemin:
@@ -288,13 +309,15 @@ def main(argv=None):
         "espaces": [],
         "pages": sortie_pages,
         "doublons": [],
-        "liens_communs": sorted({ids[r] for r in (resoudre(x) for x in liens_communs_bruts) if r}),
     }
+    communs_ids = sorted({ids[r] for r in (resoudre(x) for x in liens_communs_bruts) if r})
+    if communs_ids:
+        sortie["liens_communs"] = communs_ids
     with open(args.sortie, "w", encoding="utf-8") as f:
         json.dump(sortie, f, ensure_ascii=False, indent=2)
     print("%d pages trouvées (%d sans gabarit lisible, %d liens non résolus) -> %s" % (len(sortie_pages), sans_gabarit, non_resolus, args.sortie))
-    if sortie["liens_communs"]:
-        print("Menu ou pied de page recopié dans chaque fichier, vers : %s. Ces liens ne sont comptés que sur l'accueil ; dites-le dans meta.perimetre." % ", ".join(sortie["liens_communs"]))
+    if sortie.get("liens_communs"):
+        print("Menu ou pied de page commun (gabarit de base ou lignes recopiées), vers : %s. Ces liens sont à mettre sur l'accueil seulement ; dites-le dans meta.perimetre. Le champ liens_communs est une aide : supprimez-le de l'inventaire final." % ", ".join(sortie["liens_communs"]))
     print("A faire à la main : étapes, fonction de chaque page, sous-pages (parent), pages d'entrée, doublons, relecture des liens.")
     return 0
 

@@ -1,7 +1,7 @@
 schema_version: "1.1"
 name: carte-site-statique
 expected_outcome: |
-  Un inventaire.json valide des 12 pages du site statique, une carte HTML ouvrable dans un navigateur,
+  Un inventaire.json valide des 12 pages du site statique, une carte HTML construite avec scripts/construire.py et ouvrable dans un navigateur,
   la page galerie signalée orpheline, le menu commun dit dans meta.perimetre (et non répété sur chaque page),
   aucun doublon inventé entre l'inscription et le contact (deux fonctions différentes), et un compte rendu
   qui dit les hypothèses prises.

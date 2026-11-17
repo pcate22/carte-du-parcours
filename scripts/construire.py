@@ -21,6 +21,7 @@ import sys
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
+import controler_html  # noqa: E402
 import verifier  # noqa: E402
 
 DEBUT = "<!--DONNEES:DEBUT-->"
@@ -80,8 +81,11 @@ def main(argv=None):
         data = json.load(f)
     interdits = []
     if args.interdits:
-        with open(args.interdits, encoding="utf-8") as f:
-            interdits = f.read().splitlines()
+        try:
+            with open(args.interdits, encoding="utf-8") as f:
+                interdits = f.read().splitlines()
+        except OSError:
+            print("INFO      fichier d'interdits %s introuvable : ignoré." % args.interdits)
     erreurs, attentions, infos = verifier.controler(data, interdits)
     for t in erreurs:
         print("ERREUR    " + t)
@@ -106,6 +110,16 @@ def main(argv=None):
         f.write(fragment_artefact(page))
     print("Écrit : %s (%d Ko)" % (chemin_page, os.path.getsize(chemin_page) // 1024))
     print("Écrit : %s (%d Ko, pour l'outil Artifact)" % (chemin_artefact, os.path.getsize(chemin_artefact) // 1024))
+    e1, i1 = controler_html.controler_page(chemin_page)
+    e2, i2 = controler_html.controler_page(chemin_artefact, fragment=True)
+    for t in e1 + e2:
+        print("ERREUR    " + t)
+    for t in i1 + i2:
+        print("INFO      " + t)
+    if e1 + e2:
+        print("Carte construite mais le contrôle du fichier échoue : ne la livrez pas.")
+        return 3
+    print("Contrôle statique des deux fichiers : OK. Le rendu n'est pas testé : ouvrez la carte dans un navigateur (SKILL.md, étape 8).")
     return 0
 
 

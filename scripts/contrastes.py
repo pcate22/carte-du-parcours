@@ -41,7 +41,7 @@ PAIRES = [
     ("texte-2", "fond", 3.0, "flèche en pointillé"),
     ("focus", "fond", 3.0, "anneau de focus sur la page"),
     ("focus", "surface", 3.0, "anneau de focus dans les cartes"),
-    ("attention", "fond", 3.0, "bordure d'un doublon"),
+    ("attention", "fond", 4.5, "étiquette « même fonction »"),
 ]
 
 

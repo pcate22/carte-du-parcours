@@ -34,7 +34,7 @@ Pour trouver les pages que rien ne relie : toute page de la liste qui n'apparaî
 
 ## 3. Les étapes d'un site vitrine
 
-Un site de présentation n'a pas de « paiement » ni de « compte ». Proposer, et faire valider :
+Un site de présentation n'a pas de « paiement » ni de « compte ». Les étapes suivent **les deux ou trois buts du visiteur** (écouter, rejoindre, écrire), pas la structure des dossiers. À défaut, proposer, et faire valider :
 
 1. **Découvrir** : accueil, présentation, actualités.
 2. **Comprendre l'offre** : pages de service, tarifs, exemples.
@@ -42,6 +42,12 @@ Un site de présentation n'a pas de « paiement » ni de « compte ». Proposer,
 4. **Après** : pages de remerciement, confirmations.
 5. **Informations** (sans numéro) : mentions légales, accessibilité, plan du site.
 6. **Erreurs** (sans numéro) : 404.
+
+## 3 bis. Les constats d'un site statique
+
+Un formulaire sans destination visible (`action` vers une page fixe, ou absent, ou sans `method`) est un constat : le dire, car la personne ne saura pas où part son message. Idem : une page sans aucune suite, une information attendue qui manque (date, lieu, horaire), un parcours qui renvoie vers un formulaire trop général. Les noter dans `constats`.
+
+Les adresses gardent leur extension (`/concerts.html`) quand les liens du site l'écrivent ainsi ; `index.html` est la page de son dossier.
 
 ## 4. Les doublons d'un site statique
 
@@ -56,4 +62,4 @@ Liens, boutons, champs, listes, hors menu et pied de page. Les images cliquables
 
 ## 6. Écrire, contrôler, construire
 
-Revenir à `SKILL.md`, étapes 3 à 7.
+Revenir à `SKILL.md`, étapes 3 à 8.

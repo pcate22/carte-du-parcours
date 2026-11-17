@@ -74,8 +74,8 @@ def controler(data, interdits=None):
         erreurs.append("meta.titre est vide : donnez un nom à la carte (deux à quatre mots).")
     elif not 2 <= len(titre.split()) <= 4:
         attentions.append("meta.titre « %s » : visez deux à quatre mots, c'est le nom de l'artefact." % titre)
-    if not meta.get("etat_au"):
-        attentions.append("meta.etat_au est vide : la carte doit dire à quelle date l'inventaire a été fait.")
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", meta.get("etat_au", "")):
+        erreurs.append("meta.etat_au doit être une date AAAA-MM-JJ (la carte dit à quelle date l'inventaire a été fait) : %r" % meta.get("etat_au", ""))
     if not meta.get("perimetre"):
         attentions.append("meta.perimetre est vide : dites ce que la carte couvre et ce qu'elle laisse de côté.")
 
@@ -98,7 +98,8 @@ def controler(data, interdits=None):
         pid = p.get("id", "")
         if not pid or not ID_OK.match(pid):
             erreurs.append("identifiant « %s » invalide : minuscules, chiffres et tirets seulement." % pid)
-            continue
+            if not pid:
+                continue
         if pid in par_id:
             erreurs.append("identifiant « %s » utilisé deux fois." % pid)
             continue
@@ -202,12 +203,23 @@ def controler(data, interdits=None):
                 if a < b:
                     paires_signalees.add((a, b))
 
+    # --- Paires examinées et écartées : « non_doublons »
+    ecartes = set()
+    for e in data.get("non_doublons", []):
+        ids = e.get("pages", [])
+        if len(ids) != 2 or any(i not in par_id for i in ids):
+            erreurs.append("non_doublons : il faut deux pages qui existent : %r" % (ids,))
+            continue
+        if not e.get("raison"):
+            erreurs.append("non_doublons %s : « raison » manquante (pourquoi ce ne sont pas deux fois la même chose)." % (ids,))
+        ecartes.add(tuple(sorted(ids)))
+
     # --- Doublons probables non signalés
     liste = list(par_id.values())
     for i, a in enumerate(liste):
         for b in liste[i + 1:]:
             cle = tuple(sorted((a["id"], b["id"])))
-            if cle in paires_signalees:
+            if cle in paires_signalees or cle in ecartes:
                 continue
             if a.get("parent") == b["id"] or b.get("parent") == a["id"]:
                 continue
@@ -222,7 +234,15 @@ def controler(data, interdits=None):
             if ka and kb and len(ka & kb) >= 3 and len(ka & kb) / float(len(ka | kb)) >= 0.5:
                 raisons.append("fonctions très proches")
             if raisons:
-                attentions.append("doublon non signalé ? « %s » et « %s » : %s. Ajoutez un groupe dans « doublons » ou vérifiez que ce sont deux fonctions différentes." % (a["id"], b["id"], ", ".join(raisons)))
+                attentions.append("doublon non signalé ? « %s » et « %s » : %s. Ajoutez un groupe dans « doublons », ou, si ce sont bien deux fonctions différentes, une entrée dans « non_doublons » avec la raison." % (a["id"], b["id"], ", ".join(raisons)))
+
+    # --- Constats
+    for i, c in enumerate(data.get("constats", [])):
+        if not c.get("titre") or not c.get("texte"):
+            erreurs.append("constat n°%d : « titre » et « texte » sont obligatoires." % (i + 1))
+        for pid in c.get("pages", []):
+            if pid not in par_id:
+                erreurs.append("constat « %s » : la page « %s » n'existe pas." % (c.get("titre", "?"), pid))
 
     # --- Données réelles et mots interdits
     interdits_n = [normaliser(m.strip()) for m in (interdits or []) if m.strip() and not m.strip().startswith("#")]
@@ -260,10 +280,15 @@ def main(argv=None):
         print("ERREUR : impossible de lire %s : %s" % (args.inventaire, e))
         return 1
     interdits = []
+    avant = []
     if args.interdits:
-        with open(args.interdits, encoding="utf-8") as f:
-            interdits = f.read().splitlines()
+        try:
+            with open(args.interdits, encoding="utf-8") as f:
+                interdits = f.read().splitlines()
+        except OSError:
+            avant.append("fichier d'interdits %s introuvable : ignoré (aucun mot interdit contrôlé)." % args.interdits)
     erreurs, attentions, infos = controler(data, interdits)
+    infos = avant + infos
     for t in erreurs:
         print("ERREUR    " + t)
     for t in attentions:
