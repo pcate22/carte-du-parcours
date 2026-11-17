@@ -158,7 +158,7 @@ def controler(data, interdits=None):
         attentions.append("aucune page marquée « entree »: true. Marquez la ou les pages où l'on arrive de l'extérieur (adresse, menu, lien externe).")
     orphelines = [pid for pid, p in par_id.items() if not arrivees[pid] and not p.get("entree") and not p.get("absente")]
     for pid in orphelines:
-        attentions.append("page « %s » orpheline : aucun lien n'y mène. Si c'est une page d'entrée, ajoutez « entree »: true ; sinon la carte la signale." % pid)
+        attentions.append("page « %s » orpheline : aucun lien n'y mène. C'est une information : la carte la signale. N'ajoutez « entree »: true que si l'on y arrive de l'extérieur (adresse donnée, lien d'e-mail)." % pid)
     # accessibles depuis une entrée
     vus = set(entrees)
     pile = list(entrees)

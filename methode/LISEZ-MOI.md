@@ -79,7 +79,7 @@ Sur petit écran la carte ne casse pas : une colonne de cartes, et la fiche devi
 | Cas | Comment le dire | Ce que la carte montre |
 |---|---|---|
 | Une sous-page (écran ouvert depuis un autre, un réglage de détail) | `parent` | « sous-page de… » sur la carte, liste « Sous-pages » dans la fiche du parent |
-| Une page où l'on arrive de l'extérieur (adresse, menu, e-mail, retour d'un prestataire) | `entree: true` | « Page d'entrée » dans la fiche |
+| Une page où l'on arrive sans passer par une autre page de la carte (adresse donnée, lien d'e-mail ou d'un autre site, retour d'un prestataire) | `entree: true` | « Page d'entrée » dans la fiche |
 | Une page que rien ne relie | rien : c'est calculé | badge **orpheline**, cadre rouge dans la fiche |
 | Une page décidée, pas construite | `absente: true` | badge « à construire », bordure en pointillé |
 | Ce qui cloche dans une page | `note` | encadré dans la fiche |

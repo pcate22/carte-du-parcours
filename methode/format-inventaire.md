@@ -37,14 +37,14 @@ Modèle de départ : `modele/inventaire-vide.json`. Exemple complet : `exemple/i
 | Champ | Obligatoire | Rôle |
 |---|---|---|
 | `id` | oui | Minuscules, chiffres, tirets. Sert à relier les pages et à l'adresse de la carte (`#p-<id>`). |
-| `nom` | oui | Le nom de l'écran, tel que la personne le lit. |
+| `nom` | oui | Le nom de l'écran, tel que la personne le lit. Quand le titre dépend des données (le nom d'une plante, d'une pizza), `nom` dit le modèle d'écran : « Fiche d'une plante ». |
 | `etape` | oui | Identifiant d'une étape. |
 | `fonction` | oui | `Quand [situation], je veux [action], pour [but].` Une phrase, qui finit par un point. |
 | `adresse` | conseillé | Route, fichier ou nom d'écran. Ce qui identifie une donnée ou une personne s'écrit **en modèle** (`/ateliers/{atelier}`, `/merci-{code}.html`), jamais une valeur réelle. L'adresse d'une page fixe d'un site public (`/talks/mon-talk`) est publique : écris-la telle quelle. |
 | `actions` | conseillé | Nombre d'actions sur la page, ou une fourchette : `"6"`, `"4 à 6"`, `"1 + 2 par atelier"`. Un compte non vérifié à l'écran s'écrit tel quel : `"environ 8"`, `"au moins 5"`. Ne mets pas un chiffre précis que tu n'as pas compté. |
 | `vers` | non | Identifiants des pages où l'on peut aller depuis celle-ci. |
 | `parent` | non | Identifiant de la page dont celle-ci est une sous-page. Le lien parent vers sous-page est ajouté tout seul. |
-| `entree` | non | `true` si l'on arrive sur cette page de l'extérieur (adresse tapée, menu, lien d'e-mail, erreur 404). |
+| `entree` | non | `true` si l'on arrive sur cette page sans être passé par une autre page de la carte : adresse tapée ou donnée, lien d'un e-mail ou d'un autre site, moteur de recherche, erreur 404. Le menu commun ne fait pas des autres pages des entrées : c'est l'accueil qui porte ses cibles. |
 | `absente` | non | `true` pour une page décidée et pas encore construite : bordure en pointillé, badge « à construire ». |
 | `note` | non | Une remarque : ce qui cloche, ce qui manque, ce que le code fait en vrai. |
 
