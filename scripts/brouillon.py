@@ -69,7 +69,7 @@ def slug(texte):
 
 
 def identifiant(adresse):
-    """Identifiant lisible : /speakeuses -> speakeuses, /speakeuses/{id} -> speakeuses-detail, /{slug} -> page-slug."""
+    """Identifiant lisible : /produits -> produits, /produits/{id} -> produits-detail, /{slug} -> page-slug."""
     base = slug(adresse)
     if not adresse.startswith("/") or adresse == "/":
         return base
@@ -357,7 +357,7 @@ def main(argv=None):
     php = {os.path.basename(x): x for x in fichiers if x.endswith(".php")}
 
     def par_ressemblance(lien):
-        """Un lien sans page (adresse propre réécrite : /talks/x pour talk-x.html) : la page dont l'adresse finit comme lui, si elle est seule."""
+        """Un lien sans page (adresse propre réécrite : /fiches/x pour fiche-x.html) : la page dont l'adresse finit comme lui, si elle est seule."""
         dernier = normaliser_adresse(lien).rstrip("/").split("/")[-1]
         if not lien.startswith("/") or len(dernier) < 4 or re.search(r"\.\w{2,4}$", dernier):
             return None

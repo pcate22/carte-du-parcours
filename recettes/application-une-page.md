@@ -23,14 +23,14 @@ grep -rnE "location\.pathname|useLocation|pushState|ecranDe|screenFor" src
 grep -rnE "case '[a-z-]+':" src | head
 ```
 
-Une application à routeur maison a souvent un fichier d'adresses (une fonction par écran), un type `Ecran` ou `Screen`, et un fichier de routes avec un `switch (ecran.nom)`. La table qui range chaque écran dans son onglet (`PLACES`, `tabs`, `screens`) est la meilleure source : une ligne par écran.
+Une application à routeur maison a souvent un fichier d'adresses (une fonction par écran), un type `Ecran` ou `Screen`, et un fichier de routes avec un `switch (ecran.nom)`. La table qui range chaque écran dans son onglet (`routes`, `tabs`, `screens`) est la meilleure source : une ligne par écran.
 
-- Une adresse avec un identifiant (`/carte/{pizza}`) est **une page par modèle d'écran**, pas une par valeur.
+- Une adresse avec un identifiant (`/fiche/{id}`) est **une page par modèle d'écran**, pas une par valeur.
 - Les adresses déplacées qui renvoient vers une nouvelle adresse (`deplacee`, `redirect`) ne sont pas des pages.
 
 ## 2. Les écrans qui ne sont pas des adresses
 
-Un écran peut remplacer tous les autres sans changer l'adresse : saisie d'un code d'accès, connexion, « l'app doit se mettre à jour », première installation. Cherche dans le composant racine (`App.tsx`) les `return <Ecran... />` placés **avant** le routeur. Ce sont des pages : dis dans `adresse` quand elles s'affichent (« toute adresse, tant que l'accès n'est pas accordé »), marque-les `entree: true`.
+Un écran peut remplacer tous les autres sans changer l'adresse : saisie d'un code, connexion, écran de mise à jour obligatoire, première installation. Cherche dans le composant racine (`App.tsx`) les `return <Ecran... />` placés **avant** le routeur. Ce sont des pages : dis dans `adresse` quand elles s'affichent (« toute adresse, tant que l'accès n'est pas accordé »), marque-les `entree: true`.
 
 ## 3. Un écran, deux versions
 
@@ -38,7 +38,7 @@ Un interrupteur (nouveauté, essai A/B, réglage) peut faire afficher, à la mê
 
 ## 4. Relier
 
-Les routes disent où mène chaque bouton : cherche `naviguer(`, `navigate(`, `router.push(`, `<Link to=...>`, et les fonctions passées en propriétés (`ouvrirPizza={(id) => naviguer(adresses.produit(id))}`). Le retour (`useRetour(adresses.liste())`) donne la page parente. Une adresse construite par une fonction (`adresses.produit(id)`) se relit dans le fichier des adresses.
+Les routes disent où mène chaque bouton : cherche `navigate(`, `router.push(`, `<Link to=...>`, et les fonctions passées en propriétés (`ouvrirProduit={(id) => navigate(routes.produit(id))}`). Le retour (`useBack(routes.liste())`) donne la page parente. Une adresse construite par une fonction (`routes.produit(id)`) se relit dans le fichier des adresses.
 
 La **barre d'onglets** (ou le menu latéral) est le menu commun : dis-la une fois dans `meta.perimetre`, mets ses cibles sur la page d'arrivée, pas sur chaque écran. Elle n'est souvent présente que sur les écrans de liste : dis-le.
 
@@ -48,14 +48,14 @@ Une application de pilotage n'a pas de parcours dans le temps : les onglets sont
 
 ## 6. Compter les actions
 
-Le rendu est dans les composants et leurs sous-composants : un compte exact demande de lancer l'application avec **des données inventées** (jamais un vrai code d'accès ni des données de production). Sans cela, lis chaque écran et ses sous-composants (boutons, champs, choix, onglets, volets) et écris `"environ 8"` ou `"3 + 1 par pizza"`. Ne mets pas un chiffre précis que tu n'as pas compté : la carte affiche le texte tel quel.
+Le rendu est dans les composants et leurs sous-composants : un compte exact demande de lancer l'application avec **des données inventées** (jamais un vrai code ni des données de production). Sans cela, lis chaque écran et ses sous-composants (boutons, champs, choix, onglets, volets) et écris `"environ 8"` ou `"3 + 1 par produit"`. Ne mets pas un chiffre précis que tu n'as pas compté : la carte affiche le texte tel quel.
 
 ## 7. Les doublons d'une application d'une seule page
 
 Les gestes de `recettes/doublons.md` valent ici, avec trois habitudes du genre :
 
-- **le même texte d'état écrit plusieurs fois** (« cette pizza n'existe plus », « cet ingrédient n'existe plus »…) : `etat-refait` ;
-- **le même titre pour deux écrans** (deux « Quel ingrédient ? », deux « Ma carte ») : `deux-noms` ;
+- **le même texte d'état écrit plusieurs fois** (« ce produit n'existe plus », « cette fiche n'existe plus »…) : `etat-refait` ;
+- **le même titre pour deux écrans** (deux « Quel produit ? », deux « Mon catalogue ») : `deux-noms` ;
 - **un composant partagé** par deux écrans (la même liste, le même formulaire) n'est pas un doublon ; deux écrans qui montrent le même composant à deux moments (première ouverture, puis plus tard) vont dans `non_doublons`, avec la raison.
 
 ## 8. Écrire, contrôler, construire

@@ -49,8 +49,8 @@ class Actions(unittest.TestCase):
 class Identifiants(unittest.TestCase):
     def test_identifiants_lisibles(self):
         self.assertEqual(brouillon.identifiant("/"), "accueil")
-        self.assertEqual(brouillon.identifiant("/speakeuses"), "speakeuses")
-        self.assertEqual(brouillon.identifiant("/speakeuses/{id}"), "speakeuses-detail")
+        self.assertEqual(brouillon.identifiant("/produits"), "produits")
+        self.assertEqual(brouillon.identifiant("/produits/{id}"), "produits-detail")
         self.assertEqual(brouillon.identifiant("/{slug}"), "page-slug")
         self.assertEqual(brouillon.identifiant("/a/{x}/b"), "a-b")
 
@@ -58,40 +58,40 @@ class Identifiants(unittest.TestCase):
 class Next(unittest.TestCase):
     def test_redirections_pages_d_erreur_et_adresse_libre(self):
         with tempfile.TemporaryDirectory() as d:
-            ecrire(d, "src/app/page.tsx", "export default function A(){ return <main><Link href=\"/actualites\">Actualités</Link></main> }")
-            ecrire(d, "src/app/actualites/page.tsx", "export default function B(){ return <main><h1>Actualités</h1></main> }")
-            ecrire(d, "src/app/articles/page.tsx", "import { redirect } from 'next/navigation'\n/** ancienne liste */\nexport default function C(){ redirect('/actualites') }")
+            ecrire(d, "src/app/page.tsx", "export default function A(){ return <main><Link href=\"/catalogue\">Catalogue</Link></main> }")
+            ecrire(d, "src/app/catalogue/page.tsx", "export default function B(){ return <main><h1>Catalogue</h1></main> }")
+            ecrire(d, "src/app/articles/page.tsx", "import { redirect } from 'next/navigation'\n/** ancienne liste */\nexport default function C(){ redirect('/catalogue') }")
             ecrire(d, "src/app/[slug]/page.tsx", "export default function D(){ return <main><h1>Page</h1></main> }")
             ecrire(d, "src/app/not-found.tsx", "export default function N(){ return <h1>Page introuvable</h1> }")
             ecrire(d, "src/app/error.tsx", "export default function E(){ return <h1>Oups</h1> }")
             ecrire(d, "src/app/api/x/route.ts", "export async function GET(){ return new Response('ok') }")
             data, _ = lancer_brouillon(d)
             ids = {p["id"] for p in data["pages"]}
-            self.assertEqual(ids, {"accueil", "actualites", "page-slug", "page-introuvable", "page-d-erreur"})
+            self.assertEqual(ids, {"accueil", "catalogue", "page-slug", "page-introuvable", "page-d-erreur"})
             self.assertEqual([r["adresse"] for r in data["redirections"]], ["/articles"])
             accueil = [p for p in data["pages"] if p["id"] == "accueil"][0]
-            self.assertIn("actualites", accueil["vers"])
+            self.assertIn("catalogue", accueil["vers"])
             self.assertTrue([p for p in data["pages"] if p["id"] == "page-introuvable"][0]["entree"])
 
 
 class SitePhp(unittest.TestCase):
     def test_formulaire_vers_php_adresse_propre_et_lien_conditionnel(self):
         with tempfile.TemporaryDirectory() as d:
-            menu = '<nav><a href="/">Accueil</a><a href="/contact.html">Contact</a><a href="/talks.html">Talks</a></nav>\n' * 1
+            menu = '<nav><a href="/">Accueil</a><a href="/contact.html">Contact</a><a href="/fiches.html">Fiches</a></nav>\n' * 1
             for nom in ("a", "b", "c", "d", "e"):
                 ecrire(d, nom + ".html", "<html><body>" + "<p>ligne commune assez longue pour compter dans le menu</p>\n" + "<h1>" + nom + "</h1></body></html>")
-            ecrire(d, "index.html", "<html><body><h1>Accueil</h1><a href=\"/talks/mon-talk\">Mon talk</a></body></html>")
-            ecrire(d, "talks.html", "<html><body><h1>Talks</h1></body></html>")
-            ecrire(d, "talk-mon-talk.html", "<html><body><h1>Mon talk</h1><form action=\"/contact.php\" method=\"post\"><input name=\"e\"><button>Envoyer</button></form></body></html>")
+            ecrire(d, "index.html", "<html><body><h1>Accueil</h1><a href=\"/fiches/ma-fiche\">Ma fiche</a></body></html>")
+            ecrire(d, "fiches.html", "<html><body><h1>Fiches</h1></body></html>")
+            ecrire(d, "fiche-ma-fiche.html", "<html><body><h1>Ma fiche</h1><form action=\"/contact.php\" method=\"post\"><input name=\"e\"><button>Envoyer</button></form></body></html>")
             ecrire(d, "contact.html", "<html><body><h1>Contact</h1></body></html>")
             ecrire(d, "contact-envoye.html", "<html><body><h1>Envoyé</h1></body></html>")
             ecrire(d, "contact.php", "<?php\nfunction aller($p){ header('Location: /' . $p); }\naller('contact-envoye.html');\n")
             data, sortie = lancer_brouillon(d)
             par_id = {p["id"]: p for p in data["pages"]}
-            self.assertIn("talk-mon-talk", par_id["accueil"]["vers"])          # /talks/mon-talk -> talk-mon-talk.html, par ressemblance
-            self.assertIn("contact-envoye", par_id["talk-mon-talk"]["vers"])   # le script PHP cite la page vue ensuite
+            self.assertIn("fiche-ma-fiche", par_id["accueil"]["vers"])          # /fiches/ma-fiche -> fiche-ma-fiche.html, par ressemblance
+            self.assertIn("contact-envoye", par_id["fiche-ma-fiche"]["vers"])   # le script PHP cite la page vue ensuite
             self.assertIn("ressemblance", sortie)
-            self.assertEqual(par_id["talk-mon-talk"]["actions"], "2")
+            self.assertEqual(par_id["fiche-ma-fiche"]["actions"], "2")
 
 
 class Verifier(unittest.TestCase):

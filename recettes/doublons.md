@@ -65,7 +65,7 @@ Quand un interrupteur, un essai ou un réglage fait afficher deux écrans diffé
 
 ## Les pages de confirmation, de suppression, d'erreur
 
-Une page « Supprimer X ? » par type d'objet (édition, atelier, compte…) est un `etat-refait` quand chacune a sa mise en page et son bouton. Sept pages de suppression qui n'ont ni le même composant ni la même page sont un bon candidat : un seul gabarit suffirait. Quand elles partagent déjà le même composant, ce sont des voisines : `non_doublons`.
+Une page « Supprimer X ? » par type d'objet (dossier, chapitre, compte…) est un `etat-refait` quand chacune a sa mise en page et son bouton. Plusieurs pages de suppression qui n'ont ni le même composant ni la même page sont un bon candidat : un seul gabarit suffirait. Quand elles partagent déjà le même composant, ce sont des voisines : `non_doublons`.
 
 ## Classer les groupes par intérêt
 
