@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Parcours des Ateliers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Plan : un schéma large pour l'ordinateur (environ 1440 x 760). Le parcours en ruban cliquable, comme une ligne de métro
+   dont chaque étape est une station ; les pages en cartes par étape ; la fiche de la page choisie à droite.
+   Tout est dans ce fichier : aucun script ni style externe, les données sont dans le bloc JSON plus bas. */
+:root {
+  /* Couleurs, clair. Chaque paire texte/fond est mesurée par scripts/contrastes.py. */
+  --fond: #F3F6F7; --surface: #FFFFFF; --teinte: #E3EEF1; --surligne: #D8EAF0;
+  --texte: #12232B; --texte-2: #41535B; --marque: #0A4D5C; --bord: #667880; --filet: #D2DBDF;
+  --action: #0A6280; --sur-action: #FFFFFF; --focus: #1D4FD7;
+  --attention: #7A4300; --alerte-fond: #FFEFD0;
+  --erreur: #8C1D12; --erreur-fond: #FCE8E4;
+  /* Polices : celles du système, pour que le fichier reste seul et hors ligne. */
+  --police-titres: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --police-code: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --haut-ruban: 76px;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #0D1A20; --surface: #14262E; --teinte: #1B343E; --surligne: #1F3E4B;
+    --texte: #E9F0F3; --texte-2: #B3C3CA; --marque: #8CD0E0; --bord: #7D929C; --filet: #2A414B;
+    --action: #7FCBE2; --sur-action: #0D1A20; --focus: #F5C86A;
+    --attention: #F4C77C; --alerte-fond: #35240F;
+    --erreur: #FFB4A8; --erreur-fond: #3A1B17;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #0D1A20; --surface: #14262E; --teinte: #1B343E; --surligne: #1F3E4B;
+  --texte: #E9F0F3; --texte-2: #B3C3CA; --marque: #8CD0E0; --bord: #7D929C; --filet: #2A414B;
+  --action: #7FCBE2; --sur-action: #0D1A20; --focus: #F5C86A;
+  --attention: #F4C77C; --alerte-fond: #35240F;
+  --erreur: #FFB4A8; --erreur-fond: #3A1B17;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--haut-ruban) + 8px); }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 400 16px/1.45 var(--police-texte); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--fond); }
+[hidden]:not([hidden=until-found i]) { display: none !important; }
+.page { max-width: 1760px; margin: 0 auto; padding-block: 20px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.evitement { position: absolute; left: 16px; top: -100px; z-index: 40; padding: 10px 16px; border-radius: 6px; background: var(--marque); color: var(--fond); font-weight: 700; }
+.evitement:focus { top: 8px; }
+code { font-family: var(--police-code); font-size: 14px; }
+h1, h2, h3, p, ul, ol { margin-top: 0; }
+
+/* En-tête */
+.tete { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+h1 { font: 700 34px/1.1 var(--police-titres); color: var(--marque); margin: 0; text-wrap: balance; }
+.sous { margin: 6px 0 0; color: var(--texte-2); max-width: 64ch; }
+.outils { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rech input { width: 300px; max-width: 100%; min-height: 44px; padding: 0 14px; border: 2px solid var(--bord); border-radius: 6px; background: var(--surface); color: var(--texte); font: inherit; }
+.rech input::placeholder { color: var(--texte-2); opacity: 1; }
+.bouton { min-height: 44px; padding: 0 16px; border: 2px solid var(--bord); border-radius: 6px; background: var(--surface); color: var(--marque); font-weight: 700; display: inline-flex; gap: 8px; align-items: center; }
+.bouton:hover { border-color: var(--action); }
+.bouton[aria-pressed="true"] { background: var(--alerte-fond); border-color: var(--attention); color: var(--attention); }
+.bouton .n { font-variant-numeric: tabular-nums; font-weight: 600; }
+.etat { margin: 10px 0 0; color: var(--texte-2); font-size: 15px; min-height: 22px; }
+.etat:empty { margin: 0; min-height: 0; }
+.erreur-donnees { margin: 16px 0; padding: 14px 16px; border: 2px solid var(--erreur); border-radius: 8px; background: var(--erreur-fond); color: var(--erreur); font-weight: 700; }
+
+/* Ruban du parcours : une ligne de métro, une station par étape */
+.ruban { margin-top: 16px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--fond); padding: 8px 0 10px; border-bottom: 1px solid var(--filet); }
+.ruban ol { list-style: none; margin: 0; padding: 4px 4px 6px; display: flex; overflow-x: auto; scrollbar-width: thin; }
+.ruban li { display: flex; flex: 1 0 auto; }
+.ruban li + li::before { content: ""; flex: none; align-self: center; width: 12px; height: 3px; background: var(--bord); }
+.puce { flex: 1 1 auto; min-width: 0; white-space: nowrap; min-height: 52px; padding: 6px 12px 6px 8px; text-align: left; border: 2px solid var(--bord); border-radius: 26px; background: var(--surface); display: flex; align-items: center; gap: 8px; line-height: 1.2; }
+.puce .num { flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--marque); color: var(--surface); font-weight: 700; font-size: 15px; }
+.puce .txt { display: flex; flex-direction: column; min-width: 0; }
+.puce b { font-size: 16px; color: var(--marque); }
+.puce small { color: var(--texte-2); font-size: 13px; }
+.puce:hover { border-color: var(--action); }
+.puce[aria-current="true"] { border-color: var(--action); background: var(--surligne); }
+.puce.sans-num { border-style: dashed; padding-left: 14px; }
+.puce .dbl { color: var(--attention); font-weight: 700; }
+
+/* Zone principale */
+.zone { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1fr) 430px; gap: 28px; align-items: start; }
+.cote-schema { min-width: 0; }
+.schema { position: relative; display: flex; flex-direction: column; gap: 22px; }
+.liens-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+.fl { fill: none; stroke-width: 2.2; stroke-opacity: .9; }
+.fl.suiv { stroke: var(--action); }
+.fl.vient { stroke: var(--texte-2); stroke-dasharray: 6 5; }
+.pointe.suiv { fill: var(--action); }
+.pointe.vient { fill: var(--texte-2); }
+.etape { scroll-margin-top: calc(var(--haut-ruban) + 12px); }
+.etape h2 { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; font: 700 24px/1.2 var(--police-titres); color: var(--marque); }
+.etape h2:focus { outline: none; }
+.etape h2:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.etape h2 .num { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--marque); color: var(--surface); font: 700 17px/1 var(--police-texte); align-self: center; }
+.etape h2 .meta { font: 400 15px/1.3 var(--police-texte); color: var(--texte-2); }
+.etape .soustitre { margin: 2px 0 14px; color: var(--texte-2); font-size: 15px; }
+.cartes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 16px 22px; }
+.carte { width: 100%; height: 100%; min-height: 58px; text-align: left; padding: 9px 12px; border: 2px solid var(--bord); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column; gap: 4px; position: relative; line-height: 1.25; }
+.carte:hover { border-color: var(--action); }
+.carte .nom { font-weight: 700; font-size: 15.5px; }
+.carte .parent { font-size: 13px; color: var(--texte-2); }
+.carte .marques { display: flex; flex-wrap: wrap; gap: 4px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 10px; font-size: 12.5px; font-weight: 700; line-height: 1.5; }
+.badge.double { background: var(--alerte-fond); color: var(--attention); border: 1px solid var(--attention); }
+.badge.orpheline { background: var(--erreur-fond); color: var(--erreur); border: 1px solid var(--erreur); }
+.badge.absente { background: var(--teinte); color: var(--marque); border: 1px dashed var(--marque); }
+.carte.double { border-left: 7px solid var(--attention); }
+.carte.absente { border-style: dashed; }
+.carte[aria-pressed="true"] { border-color: var(--action); background: var(--surligne); box-shadow: 0 0 0 3px var(--action); z-index: 3; }
+.carte.vient { border-style: dashed; border-color: var(--texte-2); background: var(--teinte); }
+.carte.va { border-color: var(--action); background: var(--teinte); }
+.carte.groupe { box-shadow: 0 0 0 3px var(--attention); }
+.carte .tag { position: absolute; top: -9px; right: 8px; padding: 0 7px; font-size: 12px; font-weight: 700; border-radius: 8px; background: var(--fond); color: var(--texte-2); border: 1px solid var(--bord); }
+.carte.va .tag { color: var(--action); border-color: var(--action); }
+.carte.groupe .tag { color: var(--attention); border-color: var(--attention); }
+.vide { margin: 14px 0 0; padding: 14px 16px; border: 2px dashed var(--bord); border-radius: 8px; color: var(--texte-2); }
+
+/* Espaces repliés (par exemple l'espace de l'équipe) */
+.espace { margin-top: 28px; border-top: 1px solid var(--filet); padding-top: 14px; }
+.espace summary { cursor: pointer; font: 700 22px/1.3 var(--police-titres); color: var(--marque); min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.espace summary small { font: 400 15px var(--police-texte); color: var(--texte-2); }
+.espace .schema { margin-top: 14px; }
+
+/* Fiche */
+.fiche { position: sticky; top: calc(var(--haut-ruban) + 16px); max-height: calc(100vh - var(--haut-ruban) - 32px); overflow: auto; background: var(--surface); border: 2px solid var(--bord); border-radius: 12px; padding: 20px 22px 22px; }
+.fiche:focus { outline: none; }
+.fiche h2 { font: 700 28px/1.15 var(--police-titres); color: var(--marque); margin: 4px 0 10px; text-wrap: balance; }
+.fiche h2:focus { outline: none; }
+.fiche h2:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.fiche h3 { font: 700 14px/1.3 var(--police-texte); margin: 20px 0 8px; color: var(--texte-2); text-transform: uppercase; letter-spacing: .06em; }
+.etiquette { display: inline-block; margin: 0; padding: 2px 10px; border-radius: 12px; background: var(--teinte); color: var(--marque); font-weight: 700; font-size: 14px; }
+.fonction { font-size: 19px; line-height: 1.45; margin: 6px 0 12px; }
+.adresse { margin: 0; color: var(--texte-2); font-size: 14px; word-break: break-all; }
+.info { margin: 0 0 8px; color: var(--texte-2); font-size: 14px; }
+.actions-n { margin: 12px 0 0; }
+.actions-n b { font-variant-numeric: tabular-nums; }
+.retour { min-height: 44px; padding: 0 14px 0 6px; border: 0; background: none; color: var(--marque); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.boite { margin: 14px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--alerte-fond); border: 2px solid var(--attention); color: var(--texte); }
+.boite.orpheline { background: var(--erreur-fond); border-color: var(--erreur); }
+.boite strong { color: var(--attention); display: block; margin-bottom: 2px; }
+.boite.orpheline strong { color: var(--erreur); }
+.boite p { margin: 2px 0 8px; }
+.boite .type { font-size: 14px; color: var(--texte-2); }
+.note { margin: 14px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--teinte); }
+.liste-liens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.lien { width: 100%; min-height: 44px; text-align: left; padding: 8px 12px; border: 2px solid var(--filet); border-radius: 8px; background: var(--fond); display: flex; justify-content: space-between; gap: 10px; align-items: center; font-weight: 600; }
+.lien:hover { border-color: var(--action); }
+.lien small { color: var(--texte-2); font-weight: 400; text-align: right; }
+.lien .badge { margin-left: 6px; }
+.aucun { margin: 0; color: var(--texte-2); }
+.chiffres { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 12px 0 0; padding: 0; list-style: none; }
+.chiffres b { font: 700 28px/1 var(--police-titres); color: var(--marque); display: block; font-variant-numeric: tabular-nums; }
+.chiffres span { color: var(--texte-2); font-size: 14px; }
+.legende { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.legende li { display: flex; gap: 12px; align-items: flex-start; }
+.pastille { flex: none; width: 28px; height: 22px; border-radius: 6px; margin-top: 3px; border: 2px solid var(--bord); background: var(--surface); }
+.pastille.d { border-left: 7px solid var(--attention); }
+.pastille.v { border-style: dashed; background: var(--teinte); border-color: var(--texte-2); }
+.pastille.a { border-color: var(--action); background: var(--teinte); }
+.pastille.o { border-color: var(--erreur); background: var(--erreur-fond); }
+.pastille.x { border-style: dashed; background: var(--teinte); border-color: var(--marque); }
+.pastille.t { border-style: dashed; border-radius: 12px; }
+
+/* Écran étroit : la fiche devient une feuille plein écran, la page ne casse jamais */
+@media (max-width: 1000px) {
+  .zone { grid-template-columns: minmax(0, 1fr); }
+  .fiche { position: fixed; inset: 0; z-index: 20; max-height: none; border: 0; border-radius: 0; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); display: none; }
+  body.fiche-ouverte .fiche { display: block; }
+  body.fiche-ouverte { overflow: hidden; }
+  .liens-svg { display: none; }
+  h1 { font-size: 28px; }
+  .cartes { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .rech { flex: 1 1 100%; }
+  .rech input { width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<a class="evitement" href="#schema">Aller au schéma des pages</a>
+<div class="page" lang="fr">
+  <header class="tete" id="tete">
+    <div>
+      <h1 id="titre">Carte du parcours</h1>
+      <p class="sous" id="intro"></p>
+    </div>
+    <div class="outils">
+      <label class="rech"><span class="sr-only">Chercher une page</span><input type="search" id="q" placeholder="Chercher une page" autocomplete="off"></label>
+      <button type="button" class="bouton" id="dbl" aria-pressed="false">Seulement les doublons <span class="n" id="dbl-n"></span></button>
+      <button type="button" class="bouton" id="theme">Thème sombre</button>
+    </div>
+  </header>
+  <p class="etat" id="etat" role="status" aria-live="polite"></p>
+  <div class="erreur-donnees" id="erreur" role="alert" hidden></div>
+  <noscript><p class="erreur-donnees">Cette carte a besoin de JavaScript pour s’afficher.</p></noscript>
+
+  <nav class="ruban" id="ruban-nav" aria-label="Parcours : choisir une étape"><ol id="ruban"></ol></nav>
+
+  <main class="zone" id="zone">
+    <div class="cote-schema" id="cote-schema">
+      <div class="schema" id="schema" tabindex="-1"><svg class="liens-svg" aria-hidden="true"></svg></div>
+      <div id="espaces"></div>
+      <p class="vide" id="vide" hidden>Aucune page ne correspond. Essayez un autre mot, ou retirez le filtre sur les doublons.</p>
+    </div>
+    <aside class="fiche" id="fiche" aria-label="Fiche de la page choisie" tabindex="-1"></aside>
+  </main>
+</div>
+
+<!--DONNEES:DEBUT-->
+<script type="application/json" id="donnees">
+{
+  "meta": {
+    "titre": "Parcours des Ateliers",
+    "produit": "Les Ateliers de la Halle",
+    "role": "participants",
+    "etat_au": "2026-11-17",
+    "perimetre": "Exemple fictif : « Les Ateliers de la Halle », une application de réservation d’ateliers de cuisine de quartier, n’existe pas. La carte couvre le site côté participants et, replié, un petit espace pour les animateurs. Le règlement par carte bancaire se fait chez un prestataire externe et n’est pas détaillé.",
+    "introduction": "Les 28 pages du site côté participants : à quoi elles servent, d’où l’on y vient, où l’on peut aller. Les doublons sont signalés. Cliquez sur une page.",
+    "pour_commencer": [
+      "programme",
+      "regimes-resa",
+      "atelier-complet"
+    ]
+  },
+  "etapes": [
+    {
+      "id": "decouvrir",
+      "numero": "1",
+      "nom": "Découvrir",
+      "sous_titre": "accueil, programme, calendrier, fiche d’un atelier"
+    },
+    {
+      "id": "reserver",
+      "numero": "2",
+      "nom": "Réserver",
+      "sous_titre": "date, nombre de places, régimes, vérification"
+    },
+    {
+      "id": "payer",
+      "numero": "3",
+      "nom": "Payer",
+      "sous_titre": "régler et recevoir la confirmation"
+    },
+    {
+      "id": "preparer",
+      "numero": "4",
+      "nom": "Se préparer",
+      "sous_titre": "ma réservation, changer de date, annuler, rappel"
+    },
+    {
+      "id": "apres",
+      "numero": "5",
+      "nom": "Après l’atelier",
+      "sous_titre": "donner son avis, garder les recettes"
+    },
+    {
+      "id": "compte",
+      "nom": "Mon compte et aide",
+      "court": "Compte et aide",
+      "sous_titre": "à tout moment"
+    },
+    {
+      "id": "erreurs",
+      "nom": "Erreurs et attentes",
+      "court": "Erreurs",
+      "sous_titre": "quand quelque chose bloque"
+    },
+    {
+      "id": "animer",
+      "nom": "Animer",
+      "espace": "animateur",
+      "sous_titre": "préparer et suivre une séance"
+    }
+  ],
+  "espaces": [
+    {
+      "id": "animateur",
+      "nom": "Espace animateur",
+      "note": "réservé à l’équipe, replié"
+    }
+  ],
+  "pages": [
+    {
+      "id": "accueil",
+      "nom": "Accueil",
+      "etape": "decouvrir",
+      "adresse": "/",
+      "entree": true,
+      "actions": "7",
+      "fonction": "Quand je découvre la halle, je veux voir les prochains ateliers et comprendre comment réserver, pour décider de venir cuisiner.",
+      "vers": [
+        "programme",
+        "calendrier",
+        "connexion",
+        "mon-compte",
+        "mes-reservations",
+        "aide"
+      ]
+    },
+    {
+      "id": "programme",
+      "nom": "Programme des ateliers",
+      "etape": "decouvrir",
+      "adresse": "/ateliers",
+      "actions": "9",
+      "fonction": "Quand je cherche un atelier, je veux parcourir la liste et filtrer par thème, jour ou prix, pour trouver celui qui me convient.",
+      "vers": [
+        "fiche-atelier",
+        "accueil"
+      ]
+    },
+    {
+      "id": "calendrier",
+      "nom": "Calendrier du mois",
+      "etape": "decouvrir",
+      "adresse": "/calendrier",
+      "actions": "8",
+      "fonction": "Quand je cherche un atelier pour une date précise, je veux voir le mois jour par jour, pour trouver ce qui a lieu ce jour-là.",
+      "vers": [
+        "fiche-atelier",
+        "accueil"
+      ],
+      "note": "Le calendrier n’a pas les filtres du programme (thème, prix) : on ne peut chercher que par date."
+    },
+    {
+      "id": "fiche-atelier",
+      "nom": "Fiche d’un atelier",
+      "etape": "decouvrir",
+      "adresse": "/ateliers/{atelier}",
+      "actions": "7",
+      "fonction": "Quand un atelier m’intéresse, je veux lire le menu, la durée, le prix et le niveau, pour décider de réserver.",
+      "vers": [
+        "choisir-date",
+        "atelier-complet",
+        "programme"
+      ]
+    },
+    {
+      "id": "choisir-date",
+      "nom": "Choisir une date",
+      "etape": "reserver",
+      "adresse": "/reserver/{atelier}/date",
+      "actions": "6",
+      "fonction": "Quand je veux réserver, je veux voir les dates proposées avec les places qui restent, pour choisir celle qui me va.",
+      "vers": [
+        "nombre-places",
+        "date-complete",
+        "fiche-atelier"
+      ]
+    },
+    {
+      "id": "nombre-places",
+      "nom": "Nombre de places",
+      "etape": "reserver",
+      "adresse": "/reserver/{atelier}/places",
+      "actions": "4",
+      "fonction": "Quand je viens à plusieurs, je veux choisir le nombre de places, pour que tout le monde soit inscrit.",
+      "vers": [
+        "recap-resa",
+        "choisir-date"
+      ]
+    },
+    {
+      "id": "regimes-resa",
+      "nom": "Régimes et allergies de chacun",
+      "etape": "reserver",
+      "adresse": "/reserver/{atelier}/regimes",
+      "actions": "5",
+      "parent": "nombre-places",
+      "fonction": "Quand un participant a une allergie ou un régime, je veux le dire pour chacun, pour que l’animateur adapte les plats.",
+      "vers": [
+        "recap-resa"
+      ]
+    },
+    {
+      "id": "recap-resa",
+      "nom": "Vérifier ma réservation",
+      "etape": "reserver",
+      "adresse": "/reserver/{atelier}/recapitulatif",
+      "actions": "5",
+      "fonction": "Quand mes choix sont faits, je veux relire la date, les places et le prix, pour valider sans me tromper.",
+      "vers": [
+        "paiement",
+        "choisir-date",
+        "nombre-places"
+      ]
+    },
+    {
+      "id": "paiement",
+      "nom": "Paiement",
+      "etape": "payer",
+      "adresse": "/reserver/{atelier}/paiement",
+      "actions": "7",
+      "fonction": "Quand je valide ma réservation, je veux payer par carte, pour garantir ma place.",
+      "vers": [
+        "confirmation",
+        "code-promo"
+      ]
+    },
+    {
+      "id": "code-promo",
+      "nom": "Code promo",
+      "etape": "payer",
+      "adresse": "/reserver/{atelier}/paiement/code",
+      "actions": "3",
+      "parent": "paiement",
+      "fonction": "Quand j’ai un code promo, je veux le saisir, pour voir le prix baisser avant de payer.",
+      "vers": [
+        "paiement"
+      ]
+    },
+    {
+      "id": "confirmation",
+      "nom": "Réservation confirmée",
+      "etape": "payer",
+      "adresse": "/reservations/{id}/merci",
+      "actions": "4",
+      "fonction": "Quand mon paiement est accepté, je veux voir que ma place est réservée, pour être rassuré et savoir quoi faire ensuite.",
+      "vers": [
+        "ma-resa",
+        "mes-reservations"
+      ]
+    },
+    {
+      "id": "carte-dix",
+      "nom": "Carte de dix ateliers",
+      "etape": "payer",
+      "adresse": "n’existe pas encore",
+      "actions": "0",
+      "absente": true,
+      "fonction": "Quand je viens souvent, je veux payer une fois pour dix ateliers, pour payer moins cher à chaque venue.",
+      "vers": [],
+      "note": "Décidée, pas construite : le paiement ne sait pas encore débiter une carte de plusieurs ateliers."
+    },
+    {
+      "id": "ma-resa",
+      "nom": "Ma réservation",
+      "etape": "preparer",
+      "adresse": "/reservations/{id}",
+      "actions": "9",
+      "fonction": "Quand j’ai réservé, je veux revoir la date, les places et le prix, pour savoir où j’en suis.",
+      "vers": [
+        "changer-date",
+        "annuler",
+        "rappel",
+        "mes-reservations",
+        "avis"
+      ]
+    },
+    {
+      "id": "changer-date",
+      "nom": "Changer de date",
+      "etape": "preparer",
+      "adresse": "/reservations/{id}/date",
+      "actions": "5",
+      "parent": "ma-resa",
+      "fonction": "Quand ma date ne me convient plus, je veux en choisir une autre où il reste de la place, pour garder mon atelier sans repayer.",
+      "vers": [
+        "date-complete",
+        "ma-resa"
+      ]
+    },
+    {
+      "id": "annuler",
+      "nom": "Annuler ma réservation",
+      "etape": "preparer",
+      "adresse": "/reservations/{id}/annuler",
+      "actions": "3",
+      "parent": "ma-resa",
+      "fonction": "Quand je ne peux plus venir, je veux annuler en voyant ce qui me sera remboursé, pour décider en connaissance de cause.",
+      "vers": [
+        "mes-reservations",
+        "ma-resa"
+      ],
+      "note": "Les conditions de remboursement ne sont dites que dans une phrase de la page, sans lien vers le texte complet."
+    },
+    {
+      "id": "rappel",
+      "nom": "Me prévenir avant l’atelier",
+      "etape": "preparer",
+      "adresse": "/reservations/{id}/rappel",
+      "actions": "4",
+      "parent": "ma-resa",
+      "fonction": "Quand je ne veux pas oublier, je veux choisir un rappel par e-mail ou par SMS, pour recevoir un message la veille.",
+      "vers": [
+        "ma-resa"
+      ]
+    },
+    {
+      "id": "avis",
+      "nom": "Donner mon avis",
+      "etape": "apres",
+      "adresse": "/reservations/{id}/avis",
+      "actions": "5",
+      "fonction": "Quand l’atelier est fini, je veux noter et commenter, pour aider les autres à choisir et l’animateur à progresser.",
+      "vers": [
+        "programme"
+      ]
+    },
+    {
+      "id": "carnet",
+      "nom": "Mon carnet de recettes",
+      "etape": "apres",
+      "adresse": "/carnet",
+      "actions": "6",
+      "fonction": "Quand je veux refaire une recette à la maison, je veux retrouver celles des ateliers suivis, pour cuisiner sans tout noter.",
+      "vers": [
+        "programme"
+      ],
+      "note": "La page marche, mais aucun lien ni aucun e-mail n’y mène : on n’y arrive qu’en connaissant l’adresse."
+    },
+    {
+      "id": "connexion",
+      "nom": "Se connecter",
+      "etape": "compte",
+      "adresse": "/connexion",
+      "entree": true,
+      "actions": "3",
+      "fonction": "Quand je veux retrouver mes réservations, je veux donner mon e-mail, pour recevoir un lien et entrer sans mot de passe.",
+      "vers": [
+        "mon-compte",
+        "mes-reservations"
+      ]
+    },
+    {
+      "id": "mon-compte",
+      "nom": "Mon compte",
+      "etape": "compte",
+      "adresse": "/compte",
+      "actions": "8",
+      "fonction": "Quand je veux régler mon compte, je veux une liste claire de mes réglages, pour trouver le bon sans chercher.",
+      "vers": [
+        "compte-regimes",
+        "compte-rappels",
+        "historique",
+        "mes-reservations"
+      ]
+    },
+    {
+      "id": "compte-regimes",
+      "nom": "Mes régimes et allergies",
+      "etape": "compte",
+      "adresse": "/compte/regimes",
+      "actions": "6",
+      "parent": "mon-compte",
+      "fonction": "Quand j’ai un régime ou une allergie, je veux l’enregistrer une fois, pour ne pas le redire à chaque réservation.",
+      "vers": [
+        "mon-compte"
+      ]
+    },
+    {
+      "id": "compte-rappels",
+      "nom": "Mes rappels",
+      "etape": "compte",
+      "adresse": "/compte/rappels",
+      "actions": "3",
+      "parent": "mon-compte",
+      "fonction": "Quand je veux être prévenu avant mes ateliers, je veux choisir comment et quand, pour ne plus y penser.",
+      "vers": [
+        "mon-compte"
+      ]
+    },
+    {
+      "id": "mes-reservations",
+      "nom": "Mes réservations",
+      "etape": "compte",
+      "adresse": "/reservations",
+      "actions": "5",
+      "fonction": "Quand je veux retrouver mes ateliers à venir, je veux voir la liste de mes réservations, pour ouvrir la bonne.",
+      "vers": [
+        "ma-resa",
+        "programme"
+      ]
+    },
+    {
+      "id": "historique",
+      "nom": "Historique de mes ateliers",
+      "etape": "compte",
+      "adresse": "/compte/historique",
+      "actions": "4",
+      "fonction": "Quand je veux revoir les ateliers que j’ai faits, je veux la liste des séances passées, pour retrouver une date ou un prix.",
+      "vers": [
+        "ma-resa"
+      ]
+    },
+    {
+      "id": "aide",
+      "nom": "Aide et contact",
+      "etape": "compte",
+      "adresse": "/aide",
+      "entree": true,
+      "actions": "4",
+      "fonction": "Quand j’ai une question, je veux lire les réponses courantes ou écrire à la halle, pour être aidé vite.",
+      "vers": [
+        "accueil"
+      ]
+    },
+    {
+      "id": "atelier-complet",
+      "nom": "Atelier complet",
+      "etape": "erreurs",
+      "adresse": "/ateliers/{atelier}/complet",
+      "actions": "3",
+      "fonction": "Quand un atelier n’a plus de place, je veux le savoir et m’inscrire en liste d’attente, pour être prévenu si une place se libère.",
+      "vers": [
+        "programme",
+        "fiche-atelier"
+      ]
+    },
+    {
+      "id": "date-complete",
+      "nom": "Date complète",
+      "etape": "erreurs",
+      "adresse": "/reserver/{atelier}/date-complete",
+      "actions": "2",
+      "fonction": "Quand la date choisie vient d’être prise, je veux le savoir et revenir aux autres dates, pour réserver quand même.",
+      "vers": [
+        "choisir-date"
+      ]
+    },
+    {
+      "id": "introuvable",
+      "nom": "Page introuvable",
+      "etape": "erreurs",
+      "adresse": "toute adresse inconnue (404)",
+      "entree": true,
+      "actions": "2",
+      "fonction": "Quand j’arrive sur une adresse qui n’existe pas, je veux le comprendre et pouvoir repartir, pour ne pas me perdre.",
+      "vers": [
+        "accueil",
+        "programme",
+        "aide"
+      ]
+    },
+    {
+      "id": "anim-ateliers",
+      "nom": "Mes séances",
+      "etape": "animer",
+      "adresse": "/animateur",
+      "entree": true,
+      "actions": "5",
+      "fonction": "Quand j’anime des ateliers, je veux voir mes prochaines séances avec le nombre d’inscrits, pour préparer mes courses.",
+      "vers": [
+        "anim-appel"
+      ]
+    },
+    {
+      "id": "anim-appel",
+      "nom": "Faire l’appel",
+      "etape": "animer",
+      "adresse": "/animateur/{seance}/appel",
+      "actions": "6",
+      "parent": "anim-ateliers",
+      "fonction": "Quand les participants arrivent, je veux cocher ceux qui sont là et voir leurs allergies, pour commencer sans rien oublier.",
+      "vers": [
+        "anim-ateliers"
+      ]
+    }
+  ],
+  "doublons": [
+    {
+      "id": "date",
+      "titre": "Choisir une date",
+      "type": "meme-reglage",
+      "pages": [
+        "choisir-date",
+        "changer-date"
+      ],
+      "pourquoi": "Le choix de la date est construit deux fois : à la réservation et au changement de date. Le second écran n’affiche pas les places qui restent.",
+      "piste": "un seul écran « Choisir une date », utilisé dans les deux cas."
+    },
+    {
+      "id": "trouver",
+      "titre": "Trouver un atelier",
+      "type": "deux-chemins",
+      "pages": [
+        "programme",
+        "calendrier"
+      ],
+      "pourquoi": "Deux entrées pour la même recherche : une liste filtrable et un calendrier qui n’a pas les mêmes filtres.",
+      "piste": "garder le programme et y ajouter une vue calendrier."
+    },
+    {
+      "id": "regimes",
+      "titre": "Dire ses régimes alimentaires",
+      "type": "meme-reglage",
+      "pages": [
+        "regimes-resa",
+        "compte-regimes"
+      ],
+      "pourquoi": "Le régime se règle dans la réservation et dans le compte, sans lien entre les deux : on le redit à chaque atelier.",
+      "piste": "préremplir la réservation avec le réglage du compte."
+    },
+    {
+      "id": "rappels",
+      "titre": "Régler ses rappels",
+      "type": "meme-reglage",
+      "pages": [
+        "rappel",
+        "compte-rappels"
+      ],
+      "pourquoi": "Même réglage (e-mail ou SMS, combien de temps avant) sur deux écrans, sous deux titres : « Me prévenir avant l’atelier » et « Mes rappels ».",
+      "piste": "un seul réglage dans le compte, rappelé dans la réservation."
+    },
+    {
+      "id": "complet",
+      "titre": "Dire qu’il n’y a plus de place",
+      "type": "etat-refait",
+      "pages": [
+        "atelier-complet",
+        "date-complete"
+      ],
+      "pourquoi": "Deux pages disent « plus de place », avec deux textes, deux mises en page et deux boutons. Seule l’une propose la liste d’attente.",
+      "piste": "un seul composant « Complet », avec la liste d’attente."
+    },
+    {
+      "id": "liste",
+      "titre": "Voir mes ateliers",
+      "type": "deux-noms",
+      "pages": [
+        "mes-reservations",
+        "historique"
+      ],
+      "pourquoi": "« Mes réservations » et « Historique de mes ateliers » listent les mêmes ateliers : l’une les à venir, l’autre les passés, sans que le nom le dise.",
+      "piste": "une seule liste avec deux onglets : à venir, passés."
+    }
+  ]
+}
+</script>
+<!--DONNEES:FIN-->
+
+<script>
+"use strict";
+(function () {
+/* ---------- Petits outils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, attrs = {}, ...enfants) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v);
+  }
+  for (const c of enfants) if (c != null) e.append(c);
+  return e;
+};
+const sansAccent = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const plur = (n, un, plusieurs) => n + " " + (n > 1 ? plusieurs : un);
+function refuser(message) {
+  const e = $("#erreur"); e.hidden = false; e.textContent = "Données de la carte invalides : " + message;
+  throw new Error(message);
+}
+
+/* ---------- Les données ---------- */
+let D;
+try { D = JSON.parse($("#donnees").textContent); } catch (e) { refuser("le bloc JSON est illisible (" + e.message + ")."); }
+const META = Object.assign({ titre: "Carte du parcours", produit: "", role: "utilisatrices", etat_au: "", perimetre: "", introduction: "", pour_commencer: [] }, D.meta || {});
+const ETAPES = D.etapes || [];
+const ESPACES = D.espaces || [];
+const TYPES_DOUBLON = {
+  "deux-chemins": "Deux chemins vers la même fonction",
+  "meme-reglage": "Même réglage sur deux écrans",
+  "deux-noms": "Deux noms pour la même chose",
+  "etat-refait": "Page d’état refaite"
+};
+const ETAPE = {};
+for (const e of ETAPES) {
+  if (!e.id || !e.nom) refuser("une étape n’a pas d’identifiant ou de nom.");
+  if (e.espace && !ESPACES.some(x => x.id === e.espace)) refuser("l’étape « " + e.id + " » nomme l’espace inconnu « " + e.espace + " ».");
+  ETAPE[e.id] = e;
+}
+const PAGE = {};
+for (const d of D.pages || []) {
+  for (const champ of ["id", "nom", "etape", "fonction"]) if (!d[champ]) refuser("une page n’a pas de « " + champ + " » (" + (d.id || d.nom || "?") + ").");
+  if (PAGE[d.id]) refuser("l’identifiant « " + d.id + " » est utilisé deux fois.");
+  if (!/^[a-z0-9-]+$/.test(d.id)) refuser("l’identifiant « " + d.id + " » doit être en minuscules, chiffres et tirets.");
+  if (!ETAPE[d.etape]) refuser("la page « " + d.id + " » nomme l’étape inconnue « " + d.etape + " ».");
+  PAGE[d.id] = { id: d.id, nom: d.nom, etape: d.etape, adresse: d.adresse || "", fonction: d.fonction, actions: d.actions == null ? "" : String(d.actions),
+    vers: (d.vers || []).slice(), parent: d.parent || null, entree: !!d.entree, absente: !!d.absente, note: d.note || "",
+    vient: [], enfants: [], groupes: [] };
+}
+const TOUTES = Object.values(PAGE);
+for (const p of TOUTES) if (p.parent) {
+  if (!PAGE[p.parent]) refuser("la page « " + p.id + " » a pour parent la page inconnue « " + p.parent + " ».");
+  PAGE[p.parent].enfants.push(p.id);
+  if (!PAGE[p.parent].vers.includes(p.id)) PAGE[p.parent].vers.push(p.id);
+}
+for (const p of TOUTES) for (const v of p.vers) {
+  if (!PAGE[v]) refuser("la page « " + p.id + " » mène à la page inconnue « " + v + " ».");
+  if (!PAGE[v].vient.includes(p.id)) PAGE[v].vient.push(p.id);
+}
+for (const g of D.doublons || []) {
+  if (!g.pages || g.pages.length < 2) refuser("le groupe de doublons « " + g.id + " » doit nommer au moins deux pages.");
+  for (const i of g.pages) { if (!PAGE[i]) refuser("le groupe « " + g.id + " » nomme la page inconnue « " + i + " »."); PAGE[i].groupes.push(g); }
+}
+for (const p of TOUTES) p.orpheline = !p.entree && !p.absente && p.vient.length === 0;
+const estDouble = p => p.groupes.length > 0;
+const espaceDe = p => ETAPE[p.etape].espace || null;
+const libelleEtape = id => { const e = ETAPE[id]; return (e.numero ? e.numero + " · " : "") + e.nom; };
+const courtEtape = id => { const e = ETAPE[id]; return e.court || e.nom; };
+const PRINCIPALES = TOUTES.filter(p => !espaceDe(p));
+
+/* ---------- En-tête ---------- */
+$("#titre").textContent = META.titre;
+$("#intro").textContent = META.introduction || ("Les pages de " + (META.produit || "l’application") + " côté " + META.role + " : à quoi elles servent, d’où l’on y vient, où l’on peut aller. Cliquez sur une page.");
+$("#dbl-n").textContent = "(" + PRINCIPALES.filter(estDouble).length + ")";
+
+/* ---------- État ---------- */
+const etat = { choisi: null, pile: [], q: "", doublons: false, declencheur: null };
+const cartes = {};
+const etroit = () => matchMedia("(max-width: 1000px)").matches;
+const fiche = $("#fiche");
+
+/* ---------- Le schéma : cartes par étape ---------- */
+function bouton(p) {
+  const classes = ["carte"]; if (estDouble(p)) classes.push("double"); if (p.absente) classes.push("absente");
+  const b = el("button", { type: "button", class: classes.join(" "), "data-id": p.id, "aria-pressed": "false" });
+  b.append(el("span", { class: "nom", text: p.nom }));
+  if (p.parent) b.append(el("span", { class: "parent", text: "↳ sous-page de " + PAGE[p.parent].nom }));
+  const m = el("span", { class: "marques" });
+  if (p.orpheline) m.append(el("span", { class: "badge orpheline", text: "orpheline" }));
+  if (p.absente) m.append(el("span", { class: "badge absente", text: "à construire" }));
+  if (estDouble(p)) m.append(el("span", { class: "badge double", text: p.groupes.length > 1 ? "double ×" + p.groupes.length : "double" }));
+  if (m.childElementCount) b.append(m);
+  b.addEventListener("click", ev => choisir(p.id, { focus: ev.detail === 0, declencheur: b }));
+  cartes[p.id] = b;
+  return b;
+}
+function construire(conteneur, etapes, avantSvg) {
+  for (const e of etapes) {
+    const pages = TOUTES.filter(p => p.etape === e.id);
+    if (!pages.length) continue;
+    const sec = el("section", { class: "etape", id: "etape-" + e.id, "aria-labelledby": "t-" + e.id });
+    const h2 = el("h2", { id: "t-" + e.id, tabindex: "-1" });
+    if (e.numero) h2.append(el("span", { class: "num", text: e.numero }));
+    h2.append(document.createTextNode(e.nom));
+    const nd = pages.filter(estDouble).length;
+    h2.append(el("span", { class: "meta", text: plur(pages.length, "page", "pages") + (nd ? ", " + nd + " en double" : "") }));
+    sec.append(h2);
+    if (e.sous_titre) sec.append(el("p", { class: "soustitre", text: e.sous_titre }));
+    const ul = el("ul", { class: "cartes" });
+    for (const p of pages) ul.append(el("li", {}, bouton(p)));
+    sec.append(ul);
+    if (avantSvg) conteneur.insertBefore(sec, avantSvg); else conteneur.append(sec);
+  }
+}
+const schemaPrincipal = $("#schema");
+construire(schemaPrincipal, ETAPES.filter(e => !e.espace), schemaPrincipal.querySelector("svg"));
+for (const esp of ESPACES) {
+  const det = el("details", { class: "espace", id: "espace-" + esp.id });
+  const sum = el("summary"); sum.append(document.createTextNode(esp.nom));
+  if (esp.note) sum.append(el("small", { text: esp.note }));
+  const sch = el("div", { class: "schema" }); sch.append(document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+  sch.firstChild.setAttribute("class", "liens-svg"); sch.firstChild.setAttribute("aria-hidden", "true");
+  det.append(sum, sch);
+  construire(sch, ETAPES.filter(e => e.espace === esp.id), sch.firstChild);
+  if (sch.querySelector(".etape")) $("#espaces").append(det);
+  det.addEventListener("toggle", () => requestAnimationFrame(tracer));
+}
+
+/* ---------- Le ruban : le parcours en une ligne cliquable ---------- */
+const ruban = $("#ruban");
+for (const e of ETAPES.filter(x => !x.espace)) {
+  const pages = TOUTES.filter(p => p.etape === e.id);
+  if (!pages.length) continue;
+  const nd = pages.filter(estDouble).length;
+  const b = el("button", { type: "button", class: "puce" + (e.numero ? "" : " sans-num"), "aria-current": "false" });
+  if (e.numero) b.append(el("span", { class: "num", "aria-hidden": "true", text: e.numero }));
+  const txt = el("span", { class: "txt" });
+  txt.append(el("b", { text: (e.numero ? e.numero + ". " : "") + (e.court || e.nom) }));
+  const s = el("small"); s.append(document.createTextNode(plur(pages.length, "page", "pages")));
+  if (nd) s.append(document.createTextNode(", "), el("span", { class: "dbl", text: plur(nd, "doublon", "doublons") }));
+  txt.append(s); b.append(txt);
+  b.addEventListener("click", () => {
+    const cible = document.getElementById("etape-" + e.id);
+    if (!cible) return;
+    cible.scrollIntoView({ block: "start" });
+    cible.querySelector("h2").focus({ preventScroll: true });
+    ruban.querySelectorAll(".puce").forEach(x => x.setAttribute("aria-current", x === b ? "true" : "false"));
+  });
+  ruban.append(el("li", {}, b));
+}
+
+/* ---------- La fiche ---------- */
+function etiquetteDe(p) { const e = ETAPE[p.etape]; if (e.espace) return ESPACES.find(x => x.id === e.espace).nom + " · " + e.nom; return libelleEtape(p.etape); }
+function lienPage(id) {
+  const p = PAGE[id];
+  const b = el("button", { type: "button", class: "lien", "data-aller": id });
+  const g = el("span"); g.append(document.createTextNode(p.nom));
+  if (estDouble(p)) g.append(el("span", { class: "badge double", text: "double" }));
+  if (p.orpheline) g.append(el("span", { class: "badge orpheline", text: "orpheline" }));
+  if (p.absente) g.append(el("span", { class: "badge absente", text: "à construire" }));
+  b.append(g, el("small", { text: courtEtape(p.etape) }));
+  b.addEventListener("click", () => choisir(id, { focus: true }));
+  return b;
+}
+function listeLiens(ids, vide) {
+  if (!ids.length) return el("p", { class: "aucun", text: vide });
+  const ul = el("ul", { class: "liste-liens" });
+  for (const i of ids) ul.append(el("li", {}, lienPage(i)));
+  return ul;
+}
+function dateFr(iso) {
+  const d = new Date(iso + "T12:00:00");
+  return isNaN(d) ? iso : d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+function ficheAccueil() {
+  fiche.replaceChildren();
+  fiche.removeAttribute("role"); fiche.removeAttribute("aria-modal"); fiche.removeAttribute("aria-labelledby");
+  const doubles = PRINCIPALES.filter(estDouble), orphelines = PRINCIPALES.filter(p => p.orpheline), absentes = PRINCIPALES.filter(p => p.absente);
+  fiche.append(el("h2", { text: "Choisissez une page" }));
+  fiche.append(el("p", { text: "Chaque fiche dit à quoi sert la page, d’où l’on y arrive et où l’on peut aller. Les flèches du schéma relient la page choisie à ses voisines." }));
+  if (META.etat_au) fiche.append(el("p", { class: "info", text: "État au " + dateFr(META.etat_au) + "." }));
+  if (META.perimetre) fiche.append(el("p", { class: "info", text: META.perimetre }));
+  const ul = el("ul", { class: "chiffres" });
+  const nombres = [[PRINCIPALES.length, "pages côté " + META.role], [doubles.length, "en double"], [(D.doublons || []).length, "groupes de doublons"]];
+  if (orphelines.length) nombres.push([orphelines.length, plur(orphelines.length, "orpheline", "orphelines")]);
+  for (const [n, t] of nombres) { const li = el("li"); li.append(el("b", { text: String(n) }), el("span", { text: t })); ul.append(li); }
+  fiche.append(ul);
+  fiche.append(el("h3", { text: "Comment lire la carte" }));
+  const lg = el("ul", { class: "legende" });
+  const l = (cls, txt) => { const li = el("li"); li.append(el("span", { class: "pastille " + cls, "aria-hidden": "true" }), el("span", { text: txt })); return li; };
+  lg.append(l("", "Une page de l’application."));
+  lg.append(l("d", "Un doublon : la page fait la même chose qu’une autre. Sa fiche montre l’autre."));
+  lg.append(l("v", "Page d’où l’on arrive : bordure en pointillé et flèche en pointillé."));
+  lg.append(l("a", "Page où l’on peut aller : bordure pleine et flèche pleine."));
+  if (orphelines.length) lg.append(l("o", "Page orpheline : aucun lien n’y mène."));
+  if (absentes.length) lg.append(l("x", "Page à construire : décidée, pas encore faite."));
+  if (ETAPES.some(e => !e.numero && !e.espace)) lg.append(l("t", "Étape en pointillé dans le ruban : on peut y aller à tout moment."));
+  fiche.append(lg);
+  let depart = (META.pour_commencer || []).filter(i => PAGE[i]);
+  if (!depart.length) depart = (doubles.length ? doubles : PRINCIPALES).slice(0, 3).map(p => p.id);
+  if (depart.length) { fiche.append(el("h3", { text: "Pour commencer" }), listeLiens(depart, "")); }
+}
+function ficheDe(id, pleinEcran) {
+  const p = PAGE[id];
+  fiche.replaceChildren();
+  const precedente = etat.pile.length > 1 ? PAGE[etat.pile[etat.pile.length - 2]] : null;
+  if (precedente || pleinEcran) {
+    const retour = el("button", { type: "button", class: "retour", text: precedente ? "‹ Retour à « " + precedente.nom + " »" : "‹ Retour à la carte" });
+    retour.addEventListener("click", () => { if (precedente) history.back(); else fermer(); });
+    fiche.append(retour);
+  }
+  fiche.append(el("p", { class: "etiquette", text: etiquetteDe(p) }));
+  fiche.append(el("h2", { id: "fiche-titre", tabindex: "-1", text: p.nom }));
+  fiche.append(el("p", { class: "fonction", text: p.fonction }));
+  if (p.adresse) fiche.append(el("p", { class: "adresse" }, el("code", { text: p.adresse })));
+  if (p.actions) fiche.append(el("p", { class: "actions-n" }, document.createTextNode("Actions sur la page : "), el("b", { text: p.actions })));
+  if (p.orpheline) {
+    const b = el("div", { class: "boite orpheline" });
+    b.append(el("strong", { text: "Page orpheline" }), el("p", { text: "Aucun lien ne mène à cette page dans l’application." }));
+    fiche.append(b);
+  }
+  if (p.absente) fiche.append(el("p", { class: "note", text: "Page à construire : elle est décidée mais n’existe pas encore." }));
+  for (const g of p.groupes) {
+    const b = el("div", { class: "boite" });
+    b.append(el("strong", { text: "Doublon : " + g.titre }));
+    if (TYPES_DOUBLON[g.type]) b.append(el("p", { class: "type", text: TYPES_DOUBLON[g.type] }));
+    if (g.pourquoi) b.append(el("p", { text: g.pourquoi }));
+    const autres = g.pages.filter(i => i !== id);
+    b.append(el("p", { text: "Fait la même chose que :" }), listeLiens(autres, ""));
+    if (g.piste) b.append(el("p", { text: "Piste : " + g.piste }));
+    fiche.append(b);
+  }
+  if (p.note) fiche.append(el("p", { class: "note", text: p.note }));
+  if (p.parent) fiche.append(el("h3", { text: "Sous-page de" }), listeLiens([p.parent], ""));
+  if (p.enfants.length) fiche.append(el("h3", { text: "Sous-pages (" + p.enfants.length + ")" }), listeLiens(p.enfants, ""));
+  const arrivees = p.vient.filter(i => i !== p.parent);
+  fiche.append(el("h3", { text: "D’où l’on arrive (" + arrivees.length + ")" }), listeLiens(arrivees, p.entree ? "Page d’entrée : on y arrive par une adresse, un lien extérieur ou le menu." : "Aucun lien ne mène ici."));
+  const suites = p.vers.filter(i => !p.enfants.includes(i));
+  fiche.append(el("h3", { text: "Où l’on peut aller (" + suites.length + ")" }), listeLiens(suites, "Aucune suite : la page est un point d’arrivée."));
+  if (pleinEcran) { fiche.setAttribute("role", "dialog"); fiche.setAttribute("aria-modal", "true"); fiche.setAttribute("aria-labelledby", "fiche-titre"); }
+  else { fiche.removeAttribute("role"); fiche.removeAttribute("aria-modal"); fiche.removeAttribute("aria-labelledby"); }
+}
+
+/* ---------- Sélection, flèches, filtres ---------- */
+function marquer() {
+  for (const [id, b] of Object.entries(cartes)) {
+    b.classList.remove("vient", "va", "groupe"); b.querySelectorAll(".tag").forEach(t => t.remove());
+    b.setAttribute("aria-pressed", id === etat.choisi ? "true" : "false");
+  }
+  if (!etat.choisi) return;
+  const p = PAGE[etat.choisi];
+  const les2 = new Set(p.vient.filter(i => p.vers.includes(i)));
+  for (const i of p.vient) if (cartes[i] && !les2.has(i)) { cartes[i].classList.add("vient"); cartes[i].append(el("span", { class: "tag", text: "d’où" })); }
+  for (const i of p.vers) if (cartes[i]) { cartes[i].classList.add("va"); cartes[i].append(el("span", { class: "tag", text: les2.has(i) ? "d’où et vers" : "vers" })); }
+  for (const g of p.groupes) for (const i of g.pages) if (i !== etat.choisi && cartes[i]) { cartes[i].classList.add("groupe"); if (!cartes[i].querySelector(".tag")) cartes[i].append(el("span", { class: "tag", text: "même fonction" })); }
+}
+const NS = "http://www.w3.org/2000/svg";
+function tracer() {
+  for (const svg of document.querySelectorAll(".liens-svg")) svg.replaceChildren();
+  if (!etat.choisi || etroit()) return;
+  const source = cartes[etat.choisi];
+  const conteneur = source.closest(".schema");
+  const svg = conteneur.querySelector(".liens-svg");
+  if (!conteneur.offsetParent || source.closest("details:not([open])") || source.closest("li").hidden) return;
+  const cr = conteneur.getBoundingClientRect();
+  const defs = document.createElementNS(NS, "defs");
+  for (const nom of ["suiv", "vient"]) {
+    const m = document.createElementNS(NS, "marker");
+    m.setAttribute("id", "pointe-" + nom); m.setAttribute("viewBox", "0 0 10 10"); m.setAttribute("refX", "9"); m.setAttribute("refY", "5");
+    m.setAttribute("markerWidth", "7"); m.setAttribute("markerHeight", "7"); m.setAttribute("orient", "auto-start-reverse");
+    const t = document.createElementNS(NS, "path"); t.setAttribute("d", "M0,0 L10,5 L0,10 z"); t.setAttribute("class", "pointe " + nom); m.append(t); defs.append(m);
+  }
+  svg.append(defs);
+  const boite = e => { const r = e.getBoundingClientRect(); return { x: r.left - cr.left, y: r.top - cr.top, w: r.width, h: r.height }; };
+  const relier = (de, vers, classe) => {
+    const a = boite(de), b = boite(vers);
+    let x1, y1, x2, y2, c1x, c1y, c2x, c2y;
+    if (Math.abs((a.y + a.h / 2) - (b.y + b.h / 2)) < a.h * 0.6) {   /* même ligne */
+      const droite = b.x > a.x;
+      const ecart = droite ? b.x - (a.x + a.w) : a.x - (b.x + b.w);
+      if (ecart < 40) {   /* voisines : un trait droit, bord à bord */
+        x1 = droite ? a.x + a.w : a.x; x2 = droite ? b.x : b.x + b.w; y1 = a.y + a.h / 2; y2 = b.y + b.h / 2;
+        c1x = x1 + (x2 - x1) / 3; c1y = y1; c2x = x1 + 2 * (x2 - x1) / 3; c2y = y2;
+      } else {   /* éloignées : un pont dans l'espace entre deux lignes, pour ne pas barrer le texte des cartes */
+        x1 = a.x + a.w * 0.28; y1 = a.y; x2 = b.x + b.w * 0.28; y2 = b.y;   /* à 28 % : loin de l'étiquette en haut à droite */
+        c1x = x1; c1y = y1 - 15; c2x = x2; c2y = y2 - 15;
+      }
+    } else {
+      const bas = b.y > a.y;
+      x1 = a.x + a.w * (bas ? 0.5 : 0.28); y1 = bas ? a.y + a.h : a.y; x2 = b.x + b.w * (bas ? 0.28 : 0.5); y2 = bas ? b.y : b.y + b.h;
+      const dy = Math.max(30, Math.abs(y2 - y1) / 2) * (bas ? 1 : -1);
+      c1x = x1; c1y = y1 + dy; c2x = x2; c2y = y2 - dy;
+    }
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", "M" + x1 + "," + y1 + " C" + c1x + "," + c1y + " " + c2x + "," + c2y + " " + x2 + "," + y2);
+    path.setAttribute("class", "fl " + classe);
+    path.setAttribute("marker-end", "url(#pointe-" + classe + ")");
+    svg.append(path);
+  };
+  const p = PAGE[etat.choisi];
+  const visible = c => c && c !== source && c.closest(".schema") === conteneur && !c.closest("li").hidden;
+  for (const i of p.vers) if (visible(cartes[i])) relier(source, cartes[i], "suiv");
+  for (const i of p.vient) if (visible(cartes[i])) relier(cartes[i], source, "vient");
+}
+function dansLaVue(c) {
+  const r = c.getBoundingClientRect();
+  const haut = $("#ruban-nav").getBoundingClientRect().bottom + 8;
+  return r.top >= haut && r.bottom <= innerHeight - 8;
+}
+function ouvrirFeuille(ouverte) {
+  document.body.classList.toggle("fiche-ouverte", ouverte);
+  for (const id of ["tete", "etat", "ruban-nav", "cote-schema"]) { const e = document.getElementById(id); if (ouverte && etroit()) e.setAttribute("inert", ""); else e.removeAttribute("inert"); }
+}
+function choisir(id, opts) {
+  opts = opts || {};
+  if (!PAGE[id]) return;
+  if (id === etat.choisi && !opts.depuisAdresse && !etroit() && !opts.focus) { fermer(); return; }
+  etat.choisi = id;
+  if (opts.declencheur) etat.declencheur = opts.declencheur;
+  if (!opts.depuisAdresse) {
+    if (etat.pile[etat.pile.length - 1] !== id) etat.pile.push(id);
+    if (location.hash !== "#p-" + id) location.hash = "p-" + id;
+  }
+  const p = PAGE[id];
+  const esp = espaceDe(p);
+  if (esp) { const d = document.getElementById("espace-" + esp); if (d) d.open = true; }
+  if (cartes[id] && cartes[id].closest("li").hidden) { etat.q = ""; $("#q").value = ""; etat.doublons = false; $("#dbl").setAttribute("aria-pressed", "false"); filtrer(); }
+  const pleinEcran = etroit();
+  ficheDe(id, pleinEcran); marquer();
+  ouvrirFeuille(true);
+  if (cartes[id] && !pleinEcran && !dansLaVue(cartes[id])) cartes[id].scrollIntoView({ block: "center", inline: "nearest" });
+  requestAnimationFrame(tracer);
+  fiche.scrollTop = 0;
+  if (opts.focus || pleinEcran) $("#fiche-titre").focus({ preventScroll: true });
+}
+function fermer() {
+  const retour = etat.declencheur;
+  etat.choisi = null; etat.pile = [];
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  ouvrirFeuille(false);
+  ficheAccueil(); marquer(); tracer();
+  if (retour && document.contains(retour)) retour.focus({ preventScroll: true });
+}
+function filtrer() {
+  const q = sansAccent(etat.q.trim());
+  let n = 0;
+  for (const p of TOUTES) {
+    const c = cartes[p.id]; if (!c) continue;
+    const ok = (!q || sansAccent(p.nom + " " + p.fonction + " " + p.adresse + " " + p.note).includes(q)) && (!etat.doublons || estDouble(p));
+    c.closest("li").hidden = !ok;
+    if (ok) n++;
+  }
+  for (const sec of document.querySelectorAll(".etape")) sec.hidden = !sec.querySelector("li:not([hidden])");
+  for (const det of document.querySelectorAll(".espace")) det.hidden = !det.querySelector("li:not([hidden])");
+  const filtre = q || etat.doublons;
+  $("#vide").hidden = !(filtre && n === 0);
+  $("#etat").textContent = filtre
+    ? (n === 0 ? "Aucune page" : plur(n, "page", "pages")) + " sur " + TOUTES.length + (etat.doublons ? ", en double" : "") + (q ? ", pour « " + etat.q.trim() + " »" : "") + "."
+    : "";
+  tracer();
+}
+$("#q").addEventListener("input", e => { etat.q = e.target.value; filtrer(); });
+$("#dbl").addEventListener("click", e => { etat.doublons = !etat.doublons; e.currentTarget.setAttribute("aria-pressed", String(etat.doublons)); filtrer(); });
+
+/* ---------- Thème : suit le système, un bouton force clair ou sombre ---------- */
+const racine = document.documentElement;
+const sombreActuel = () => racine.getAttribute("data-theme") === "dark" || (!racine.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+function libelleTheme() { const b = $("#theme"); const s = sombreActuel(); b.textContent = s ? "Thème clair" : "Thème sombre"; }
+$("#theme").addEventListener("click", () => { racine.setAttribute("data-theme", sombreActuel() ? "light" : "dark"); libelleTheme(); requestAnimationFrame(tracer); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", libelleTheme);
+new MutationObserver(libelleTheme).observe(racine, { attributes: true, attributeFilter: ["data-theme"] });
+libelleTheme();
+
+/* ---------- Mesures, navigation, départ ---------- */
+function mesurerRuban() { racine.style.setProperty("--haut-ruban", Math.ceil($("#ruban-nav").getBoundingClientRect().height) + "px"); }
+let etaitEtroit = etroit();
+addEventListener("resize", () => {
+  mesurerRuban();
+  if (etroit() !== etaitEtroit) { etaitEtroit = etroit(); if (etat.choisi) { ficheDe(etat.choisi, etaitEtroit); ouvrirFeuille(true); } }
+  requestAnimationFrame(tracer);
+});
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { mesurerRuban(); requestAnimationFrame(tracer); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && etat.choisi) fermer(); });
+addEventListener("hashchange", () => {
+  const m = /^#p-([a-z0-9-]+)$/.exec(location.hash);
+  if (m && PAGE[m[1]]) {
+    const id = m[1];
+    if (etat.pile.length > 1 && etat.pile[etat.pile.length - 2] === id) etat.pile.pop();
+    else if (etat.pile[etat.pile.length - 1] !== id) etat.pile.push(id);
+    choisir(id, { depuisAdresse: true, focus: true });
+  } else if (!location.hash && etat.choisi) { etat.choisi = null; etat.pile = []; ouvrirFeuille(false); ficheAccueil(); marquer(); tracer(); }
+});
+mesurerRuban(); ficheAccueil(); filtrer();
+{
+  const m = /^#p-([a-z0-9-]+)$/.exec(location.hash);
+  if (m && PAGE[m[1]]) { etat.pile = [m[1]]; choisir(m[1], { depuisAdresse: true }); }
+}
+})();
+</script>
+</body>
+</html>
