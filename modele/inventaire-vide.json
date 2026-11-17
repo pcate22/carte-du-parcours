@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "titre": "Carte du parcours",
+    "produit": "Nom du produit",
+    "role": "utilisateurs",
+    "etat_au": "AAAA-MM-JJ",
+    "perimetre": "Ce que la carte couvre, ce qu'elle laisse de côté, ce que le menu commun contient.",
+    "introduction": ""
+  },
+  "etapes": [
+    { "id": "entree", "numero": "1", "nom": "Entrée", "sous_titre": "arriver, comprendre, choisir" },
+    { "id": "faire", "numero": "2", "nom": "Faire", "sous_titre": "le cœur du parcours" },
+    { "id": "compte", "nom": "Mon compte et aide", "court": "Compte et aide", "sous_titre": "à tout moment" },
+    { "id": "erreurs", "nom": "Erreurs et attentes", "court": "Erreurs", "sous_titre": "quand quelque chose bloque" }
+  ],
+  "espaces": [],
+  "pages": [
+    {
+      "id": "accueil", "nom": "Accueil", "etape": "entree", "adresse": "/", "entree": true, "actions": "4",
+      "fonction": "Quand je découvre le produit, je veux comprendre ce qu'il fait, pour décider d'essayer.",
+      "vers": ["faire-une-chose", "aide"]
+    },
+    {
+      "id": "faire-une-chose", "nom": "Faire une chose", "etape": "faire", "adresse": "/chose", "actions": "5",
+      "fonction": "Quand je veux faire cette chose, je veux remplir le formulaire, pour obtenir le résultat.",
+      "vers": ["accueil"]
+    },
+    {
+      "id": "aide", "nom": "Aide et contact", "etape": "compte", "adresse": "/aide", "entree": true, "actions": "3",
+      "fonction": "Quand j'ai une question, je veux écrire à une personne, pour recevoir une réponse.",
+      "vers": ["accueil"]
+    },
+    {
+      "id": "introuvable", "nom": "Page introuvable", "etape": "erreurs", "adresse": "toute adresse inconnue (404)", "entree": true, "actions": "2",
+      "fonction": "Quand j'arrive sur une adresse qui n'existe pas, je veux le comprendre et repartir, pour ne pas me perdre.",
+      "vers": ["accueil"]
+    }
+  ],
+  "doublons": []
+}
