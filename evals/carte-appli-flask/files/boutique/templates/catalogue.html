@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Le catalogue</h1>
+<form method="get"><select name="lumiere"><option>Plein soleil</option><option>Mi-ombre</option></select><input type="search" name="q"><button>Chercher</button></form>
+{% for p in plantes %}<a href="{{ url_for('plante', plante_id=p.id) }}">{{ p.nom }}</a>{% endfor %}
+{% endblock %}

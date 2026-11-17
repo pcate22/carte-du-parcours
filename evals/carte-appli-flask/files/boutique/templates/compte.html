@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Mon compte</h1>
+<a href="{{ url_for('compte_adresse') }}">Changer mon adresse de livraison</a>
+<a href="{{ url_for('catalogue') }}">Retour au catalogue</a>
+{% endblock %}

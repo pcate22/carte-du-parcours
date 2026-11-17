@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Où livrer ?</h1>
+<form method="post"><input name="rue"><input name="ville"><input name="code_postal"><select name="mode"><option>Domicile</option><option>Point relais</option></select><button>Continuer</button></form>
+<a href="{{ url_for('panier') }}">Retour au panier</a>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>{{ plante.nom }}</h1>
+<form method="post" action="/panier"><input type="number" name="quantite"><button>Ajouter au panier</button></form>
+<a href="/catalogue">Retour au catalogue</a>
+{% endblock %}

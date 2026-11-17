@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Mon adresse de livraison</h1>
+<form method="post"><input name="rue"><input name="ville"><input name="code_postal"><select name="mode"><option>Domicile</option><option>Point relais</option></select><button>Enregistrer</button></form>
+{% endblock %}

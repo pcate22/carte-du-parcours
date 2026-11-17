@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: carte-appli-flask
+expected_outcome: |
+  Un inventaire.json valide (contrôlé par scripts/verifier.py du skill) des 11 pages de la boutique
+  (10 routes plus la page 404 du gestionnaire d'erreur), puis une carte HTML construite avec
+  scripts/construire.py, avec la page conseils d'arrosage signalée orpheline, la livraison de la commande
+  et l'adresse du compte signalées comme doublon (même réglage), des fonctions « Quand je…, je veux…, pour… »
+  du côté de la cliente, et un compte rendu qui dit les hypothèses prises sans rien publier.
+context:
+  scaffold_script: place-files.sh
