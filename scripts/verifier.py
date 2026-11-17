@@ -33,6 +33,7 @@ quoi dans sur sous par avec sans ce cet cette ces il elle on nous vous ils elles
 bien faire voir pouvoir peux peut ai suis est sont avoir être etre me m te t lui leur leurs si car mais donc or ni""".split())
 RE_EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 RE_URL = re.compile(r"https?://([^/\s\"']+)", re.I)
+RE_CODE = re.compile(r"(?<![a-z0-9])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{8,}(?![a-z0-9])", re.I)
 RE_TEL = re.compile(r"(?<![\w/])(?:\+?\d[\d .\-]{8,}\d)(?![\w/])")
 HOTES_OK = re.compile(r"(^|\.)(example\.(com|org|net)|[a-z0-9-]+\.test|localhost|invalid|exemple\.test)(:\d+)?$", re.I)
 
@@ -117,7 +118,7 @@ def controler(data, interdits=None):
                 erreurs.append("page « %s » : la fonction doit suivre « Quand je…, je veux…, pour… » et finir par un point : %s" % (pid, f))
             if len(f) > 260:
                 attentions.append("page « %s » : fonction de %d signes, une phrase plus courte se lit mieux." % (pid, len(f)))
-            bas = normaliser(f)
+            bas = normaliser(f).replace("feuille de route", "feuille")   # « feuille de route » est un mot d'usage, pas la « route » du code
             trouves = [m for m in JARGON if re.search(r"\b" + re.escape(normaliser(m)) + r"\b", bas)]
             if re.search(r"[_()]|\.(py|js|html|jsx|tsx|php|rb)\b", f):
                 trouves.append("code ou nom de fonction")
@@ -125,6 +126,10 @@ def controler(data, interdits=None):
                 attentions.append("page « %s » : jargon possible (%s). La fonction se dit du côté de la personne." % (pid, ", ".join(trouves)))
         if not p.get("adresse"):
             attentions.append("page « %s » : pas d'adresse (route, fichier ou écran)." % pid)
+        for champ in ("id", "adresse"):
+            code = RE_CODE.search(str(p.get(champ) or ""))
+            if code:
+                attentions.append("page « %s » : un code (%s) dans %s. Si c'est un lien privé ou un jeton (adresse reçue par e-mail, lien de partage), remplace-le par un modèle comme /merci-{code}.html : la carte se publie." % (pid, code.group(0), "l'identifiant" if champ == "id" else "l'adresse"))
         if p.get("actions") in (None, ""):
             attentions.append("page « %s » : nombre d'actions manquant." % pid)
         for cible in p.get("vers", []):
